@@ -989,6 +989,8 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer* cand_bf, Pictu
             uint8_t*                src_y  = input_pic->y_buffer + input_origin_index;
             *(cand_bf->fast_cost)          = fn_ptr->vf(pred_y, ref_pic->y_stride, src_y, input_pic->y_stride, &sse);
         } else {
+            const double effective_ac_bias = get_effective_ac_bias(
+                pcs->scs->static_config.ac_bias, pcs->slice_type == I_SLICE, pcs->temporal_layer_index);
             *(cand_bf->fast_cost) = svt_spatial_full_distortion_kernel_facade(input_pic->y_buffer,
                                                                               input_origin_index,
                                                                               input_pic->y_stride << 1,
@@ -1004,6 +1006,19 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer* cand_bf, Pictu
                                                                               pcs->scs->static_config.ac_bias,
                                                                               pcs->scs->static_config.tx_bias)
                 << 1;
+            if (effective_ac_bias) {
+                *(cand_bf->fast_cost) += get_svt_psy_full_dist(input_pic->y_buffer,
+                                                               input_origin_index,
+                                                               input_pic->y_stride << 1,
+                                                               ref_pic->y_buffer,
+                                                               ref_origin_index,
+                                                               ref_pic->y_stride << 1,
+                                                               ctx->blk_geom->bwidth,
+                                                               ctx->blk_geom->bheight >> 1,
+                                                               ctx->hbd_md,
+                                                               effective_ac_bias)
+                    << 1;
+            }
         }
     } else {
         // intrabc not allowed in light_pd0
@@ -1015,20 +1030,14 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer* cand_bf, Pictu
             uint8_t*                src_y  = input_pic->y_buffer + input_origin_index;
             *(cand_bf->fast_cost)          = fn_ptr->vf(pred_y, pred->y_stride, src_y, input_pic->y_stride, &sse);
         } else {
-            *(cand_bf->fast_cost) = svt_spatial_full_distortion_kernel_facade(input_pic->y_buffer,
-                                                                              input_origin_index,
-                                                                              input_pic->y_stride << 1,
-                                                                              pred->y_buffer,
-                                                                              cu_origin_index,
-                                                                              pred->y_stride << 1,
-                                                                              ctx->blk_geom->bwidth,
-                                                                              ctx->blk_geom->bheight >> 1,
-                                                                              ctx->hbd_md,
-                                                                              &(cand_bf->cand->block_mi),
-                                                                              false, // is_chroma
-                                                                              pcs->temporal_layer_index,
-                                                                              pcs->scs->static_config.ac_bias,
-                                                                              pcs->scs->static_config.tx_bias)
+            *(cand_bf->fast_cost) = svt_spatial_full_distortion_kernel(input_pic->y_buffer,
+                                                                       input_origin_index,
+                                                                       input_pic->y_stride << 1,
+                                                                       pred->y_buffer,
+                                                                       cu_origin_index,
+                                                                       pred->y_stride << 1,
+                                                                       ctx->blk_geom->bwidth,
+                                                                       ctx->blk_geom->bheight >> 1)
                 << 1;
         }
     }
