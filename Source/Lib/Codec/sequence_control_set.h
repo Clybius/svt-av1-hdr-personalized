@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 * Copyright (c) 2016, Alliance for Open Media. All rights reserved
 *
@@ -299,6 +299,10 @@ typedef struct SequenceControlSet {
     uint8_t tpl;
     // If true, calculate and store the SB-based variance
     uint8_t calculate_variance;
+    // Oja's rule principal component weight vector
+    double *oja_w;
+    // Whether this SCS owns the oja_w buffer (only the instance SCS does)
+    bool oja_w_owned;
     // Whether to modulation lambda using TPL stats or/and ME-stats or/and the percentage of INTRA selection at reference frame(s)
     bool stats_based_sb_lambda_modulation;
     // Desired dimensions for an externally triggered resize

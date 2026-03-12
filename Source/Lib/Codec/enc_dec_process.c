@@ -2050,6 +2050,7 @@ static void perform_pred_depth_refinement(SequenceControlSet *scs, PictureContro
         ctx->pred_depth_only = 1;
 }
 void svt_variance_adjust_qp(PictureControlSet *pcs, bool readjust_base_q_idx);
+void svt_oja_boost(PictureControlSet *pcs, bool readjust_base_q_idx);
 void svt_aom_sb_qp_derivation_tpl_la(PictureControlSet *pcs);
 void mdc_init_qp_update(PictureControlSet *pcs);
 void svt_aom_init_enc_dec_segement(PictureParentControlSet *ppcs);
@@ -2110,6 +2111,9 @@ static void recode_loop_decision_maker(PictureControlSet *pcs, SequenceControlSe
         if (scs->static_config.enable_variance_boost && scs->static_config.rate_control_mode != SVT_AV1_RC_MODE_CBR) {
             // Don't readjust base qindex to make it play nice with the recode loop quality bookkeeping logic
             svt_variance_adjust_qp(pcs, false);
+        }
+        if (scs->static_config.oja_boost > 0 && scs->static_config.rate_control_mode != SVT_AV1_RC_MODE_CBR) {
+            svt_oja_boost(pcs, false);
         }
 
         // 2pass QPM with tpl_la

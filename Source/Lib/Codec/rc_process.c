@@ -10,6 +10,7 @@
 * PATENTS file, you can obtain it at https://www.aomedia.org/license/patent-license.
 */
 #include <stdlib.h>
+#include <math.h>
 
 #include "definitions.h"
 #include "enc_handle.h"
@@ -1702,6 +1703,72 @@ static int av1_get_deltaq_sb_variance_boost(uint8_t base_q_idx, uint64_t mean, d
 #endif
 
     return boost;
+}
+
+void svt_oja_boost(PictureControlSet *pcs, bool readjust_base_q_idx) {
+    PictureParentControlSet *ppcs_ptr = pcs->ppcs;
+    SequenceControlSet      *scs      = pcs->ppcs->scs;
+    SuperBlock              *sb_ptr;
+    uint32_t                 sb_addr;
+
+    pcs->ppcs->frm_hdr.delta_q_params.delta_q_present = 1;
+
+    uint16_t sb_cnt = scs->sb_total_count;
+    if (ppcs_ptr->frame_superres_enabled || ppcs_ptr->frame_resize_enabled) {
+        sb_cnt = ppcs_ptr->b64_total_count;
+    }
+
+    uint8_t min_qindex = MAX_Q_INDEX;
+    uint8_t max_qindex = MIN_Q_INDEX;
+    int32_t max_range  = (scs->static_config.variance_boost_curve == 3) ? VAR_BOOST_MAX_PQ_DELTAQ_RANGE
+                                                                        : VAR_BOOST_MAX_DELTAQ_RANGE;
+
+    for (sb_addr = 0; sb_addr < sb_cnt; ++sb_addr) {
+        sb_ptr = pcs->sb_ptr_array[sb_addr];
+        int boost = 0;
+
+        if (scs->oja_w != NULL) {
+            double expected_w = 1.0 / sqrt((double)scs->b64_total_count);
+            // Protect against dividing by zero or negative weights
+            if (expected_w > 0.0) {
+                double scaled_w = scs->oja_w[sb_addr] / expected_w;
+                // Scale so that weight 1.0 (mean) gives 0 boost.
+                // We multiply by the integer oja_boost strength.
+                boost = (int)((scaled_w - 1.0) * scs->static_config.oja_boost * 5.0);
+            }
+        }
+        
+        boost = CLIP3(-max_range, max_range, boost);
+
+        sb_ptr->qindex = CLIP3(1, MAX_Q_INDEX, sb_ptr->qindex - boost);
+
+        min_qindex = AOMMIN(min_qindex, sb_ptr->qindex);
+        max_qindex = AOMMAX(max_qindex, sb_ptr->qindex);
+    }
+
+    int range                 = max_qindex - min_qindex;
+    range                     = AOMMIN(range, max_range);
+    int normalized_base_q_idx = (int)min_qindex + (range >> 1);
+
+    if (readjust_base_q_idx) {
+        ppcs_ptr->frm_hdr.quantization_params.base_q_idx = normalized_base_q_idx;
+
+        pcs->picture_qp = (uint8_t)CLIP3((int32_t)scs->static_config.min_qp_allowed,
+                                         (int32_t)scs->static_config.max_qp_allowed,
+                                         (ppcs_ptr->frm_hdr.quantization_params.base_q_idx + 2) >> 2);
+    }
+
+    for (sb_addr = 0; sb_addr < sb_cnt; ++sb_addr) {
+        sb_ptr = pcs->sb_ptr_array[sb_addr];
+
+        int offset = (int)sb_ptr->qindex - normalized_base_q_idx;
+        offset     = AOMMIN(offset, max_range >> 1);
+        offset     = AOMMAX(offset, -max_range >> 1);
+
+        uint8_t normalized_qindex = CLIP3(1, MAX_Q_INDEX, ((int16_t)normalized_base_q_idx + (int16_t)offset));
+
+        sb_ptr->qindex = normalized_qindex;
+    }
 }
 
 void svt_variance_adjust_qp(PictureControlSet *pcs, bool readjust_base_q_idx) {
@@ -4023,6 +4090,9 @@ void *svt_aom_rate_control_kernel(void *input_ptr) {
             if (scs->static_config.enable_variance_boost &&
                 scs->static_config.rate_control_mode != SVT_AV1_RC_MODE_CBR) {
                 svt_variance_adjust_qp(pcs, true);
+            }
+            if (scs->static_config.oja_boost > 0) {
+                svt_oja_boost(pcs, true);
             }
             // QPM with tpl_la
             if (scs->static_config.aq_mode == 2 && pcs->ppcs->tpl_ctrls.enable && pcs->ppcs->r0 != 0) {

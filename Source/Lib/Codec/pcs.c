@@ -1283,7 +1283,7 @@ static EbErrorType picture_parent_control_set_ctor(PictureParentControlSet *obje
 
     if (init_data_ptr->calculate_variance) {
         uint8_t block_count;
-        if (init_data_ptr->allintra || init_data_ptr->aq_mode == 1 || init_data_ptr->variance_octile)
+        if (init_data_ptr->allintra || init_data_ptr->aq_mode == 1 || init_data_ptr->variance_octile || init_data_ptr->static_config.oja_boost > 0)
             block_count = 85;
         else
             block_count = 1;

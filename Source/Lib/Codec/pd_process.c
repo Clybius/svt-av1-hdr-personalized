@@ -13,6 +13,7 @@
 */
 
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include <limits.h>
 
@@ -5019,6 +5020,47 @@ void* svt_aom_picture_decision_kernel(void *input_ptr) {
             // If the required lookahead frames aren't available, and we haven't reached EOS, must wait for more frames before continuing
             if (!window_avail && !eos_reached)
                 break;
+
+            // Update Oja's principle component weights if enabled
+            if (scs->static_config.oja_boost > 0 && scs->calculate_variance && pcs->variance && scs->oja_w != NULL) {
+                // Scene change reset: if a scene change is detected, reset weights to uniform 1.0/sqrt(N)
+                if (pcs->scene_change_flag) {
+                    double init_w = 1.0 / sqrt((double)scs->b64_total_count);
+                    for (uint16_t b64_idx = 0; b64_idx < scs->b64_total_count; b64_idx++) {
+                        scs->oja_w[b64_idx] = init_w;
+                    }
+                }
+
+                double y = 0.0;
+                double mean_sq_var = 0.0;
+                // Calculate dot product y = W^T x and mean squared variance for normalization
+                for (uint16_t b64_idx = 0; b64_idx < scs->b64_total_count; b64_idx++) {
+                    double x_t = pcs->variance[b64_idx][ME_TIER_ZERO_PU_64x64];
+                    y += scs->oja_w[b64_idx] * x_t;
+                    mean_sq_var += x_t * x_t;
+                }
+                mean_sq_var /= (double)scs->b64_total_count;
+                
+                // Normalized learning rate: eta scaled by reciprocal of signal magnitude (mean square)
+                // We add a small epsilon to prevent division by zero in perfectly flat frames
+                double eta = 0.1 / (mean_sq_var + 1e-6); 
+                double norm_sq = 0.0;
+
+                // Update weights and calculate new norm squared
+                for (uint16_t b64_idx = 0; b64_idx < scs->b64_total_count; b64_idx++) {
+                    double x_t = pcs->variance[b64_idx][ME_TIER_ZERO_PU_64x64];
+                    scs->oja_w[b64_idx] += eta * y * x_t;
+                    norm_sq += scs->oja_w[b64_idx] * scs->oja_w[b64_idx];
+                }
+                
+                // Normalize weights
+                double norm = sqrt(norm_sq);
+                if (norm > 1e-9) {
+                    for (uint16_t b64_idx = 0; b64_idx < scs->b64_total_count; b64_idx++) {
+                        scs->oja_w[b64_idx] /= norm;
+                    }
+                }
+            }
 
             // Place the PCS into the Pre-Assignment Buffer
             // The Pre-Assignment Buffer is used to store a whole pre-structure

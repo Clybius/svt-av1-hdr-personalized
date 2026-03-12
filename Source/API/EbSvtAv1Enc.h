@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 *
 * This source code is subject to the terms of the BSD 3-Clause Clear License and
@@ -841,6 +841,12 @@ typedef struct EbSvtAv1EncConfiguration {
      * true = enable Variance Boost
      * Default is true in SVT-AV1-HDR. */
     bool enable_variance_boost;
+
+    /* Oja's Boost
+     * 0: disable Oja's Boost
+     * 1-10: enable Oja's Boost with specified strength
+     * Default is 0. */
+    uint8_t oja_boost;
     /* @brief Selects the curve strength to boost low variance regions according to a fast-growing formula
      * Default is 2 */
     uint8_t variance_boost_strength;

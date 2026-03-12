@@ -400,7 +400,7 @@ static void compute_b64_variance(SequenceControlSet *scs, PictureParentControlSe
         2;
 
     double *sb_var = pcs->variance[b64_idx];
-    if (scs->allintra || scs->static_config.aq_mode == 1 || scs->static_config.variance_octile) {
+    if (scs->allintra || scs->static_config.aq_mode == 1 || scs->static_config.variance_octile || scs->static_config.oja_boost > 0) {
         // 8x8 variances
         for (int blk_8x8_idx = 0, me_pu_idx = ME_TIER_ZERO_PU_8x8_0; blk_8x8_idx < 64; blk_8x8_idx++, me_pu_idx++) {
             sb_var[me_pu_idx] = (double)(mean_of_8x8_squared_values_blocks[blk_8x8_idx] -

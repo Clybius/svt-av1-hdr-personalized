@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 *
 * This source code is subject to the terms of the BSD 3-Clause Clear License and
@@ -200,6 +200,7 @@
 #define ROI_MAP_FILE_TOKEN "--roi-map-file"
 
 #define ENABLE_VARIANCE_BOOST_TOKEN "--enable-variance-boost"
+#define OJA_BOOST_TOKEN "--oja-boost"
 #define VARIANCE_BOOST_STRENGTH_TOKEN "--variance-boost-strength"
 #define VARIANCE_OCTILE_TOKEN "--variance-octile"
 #define TF_STRENGTH_FILTER_TOKEN "--tf-strength"
@@ -997,6 +998,7 @@ ConfigDescription config_entry_color_description[] = {
 ConfigDescription config_entry_psychovisual[] = {
     // Variance Boost
     {ENABLE_VARIANCE_BOOST_TOKEN, "Enable Variance Boost, default is 1 [0-1]"},
+    {OJA_BOOST_TOKEN, "Enable Oja's Boost with integer strength, 0: disabled (default), 1-10: strength"},
     {VARIANCE_BOOST_STRENGTH_TOKEN, "Variance Boost strength, default is 2 [1-4]"},
     {VARIANCE_OCTILE_TOKEN, "Octile for Variance Boost, default is 5 [1-8]"},
     {VARIANCE_BOOST_CURVE_TOKEN, "Curve for Variance Boost, default is 0 [0-3]"},
@@ -1222,6 +1224,7 @@ ConfigEntry config_entry[] = {
 
     // Variance Boost
     {ENABLE_VARIANCE_BOOST_TOKEN, "EnableVarianceBoost", set_cfg_generic_token},
+    {OJA_BOOST_TOKEN, "EnableOjaBoost", set_cfg_generic_token},
     {VARIANCE_BOOST_STRENGTH_TOKEN, "VarianceBoostStrength", set_cfg_generic_token},
     {VARIANCE_OCTILE_TOKEN, "VarianceOctile", set_cfg_generic_token},
     {VARIANCE_BOOST_CURVE_TOKEN, "VarianceBoostCurve", set_cfg_generic_token},

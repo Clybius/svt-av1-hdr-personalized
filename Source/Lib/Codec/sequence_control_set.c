@@ -26,6 +26,8 @@ static void svt_sequence_control_set_dctor(EbPtr p) {
     if (!obj)
         return;
     EB_FREE_ARRAY(obj->b64_geom);
+    if (obj->oja_w_owned)
+        EB_FREE_ARRAY(obj->oja_w);
     free_sb_geoms(obj->sb_geom);
     free_scale_evts(&obj->static_config.frame_scale_evts);
     EB_FREE_ARRAY(obj->static_config.sframe_posi.sframe_qps);
@@ -70,6 +72,8 @@ EbErrorType svt_sequence_control_set_ctor(SequenceControlSet *scs, EbPtr object_
 
     // Allocation will happen in resource-coordination
     scs->b64_geom = NULL;
+    scs->oja_w = NULL;
+    scs->oja_w_owned = false;
 
     scs->film_grain_random_seed = 7391;
 
@@ -160,8 +164,15 @@ EbErrorType copy_sequence_control_set(SequenceControlSet *dst, SequenceControlSe
         free_sb_geoms(dst->sb_geom);
     if (dst->b64_geom != NULL)
         EB_FREE_ARRAY(dst->b64_geom);
+    if (dst->oja_w != NULL && dst->oja_w != src->oja_w)
+        EB_FREE_ARRAY(dst->oja_w);
     // Copy the non-pointer members
+    // Note: this also copies src->oja_w pointer, so the copy shares the
+    // instance's oja_w buffer. This allows Oja updates in pd_process.c
+    // to persist across frames without explicit write-back.
     *dst = *src;
+    // Copy does not own the oja_w buffer; the instance SCS does.
+    dst->oja_w_owned = false;
 
     EB_MALLOC_ARRAY(dst->b64_geom, dst->b64_total_count);
     memcpy(dst->b64_geom, src->b64_geom, sizeof(B64Geom) * dst->b64_total_count);

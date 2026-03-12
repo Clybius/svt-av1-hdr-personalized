@@ -1494,6 +1494,18 @@ EB_API EbErrorType svt_av1_enc_init(EbComponentType *svt_enc_component)
         PictureControlSet* pcs = (PictureControlSet*)enc_handle_ptr->picture_control_set_pool_ptr->wrapper_ptr_pool[0]->object_ptr;
         scs->rest_units_per_tile = pcs->rst_info[0/*Y-plane*/].units_per_tile;
         scs->b64_total_count = pcs->b64_total_count;
+
+        // Allocate Oja's rule weight vector on the instance SCS so that
+        // copy_sequence_control_set will see a non-NULL oja_w and persist
+        // learned weights across frames.
+        if (scs->static_config.oja_boost > 0 && scs->oja_w == NULL) {
+            EB_MALLOC_ARRAY(scs->oja_w, scs->b64_total_count);
+            for (uint16_t i = 0; i < scs->b64_total_count; i++) {
+                scs->oja_w[i] = 1.0;
+            }
+            scs->oja_w_owned = true;
+        }
+
         create_ref_buf_descs(enc_handle_ptr);
         if (scs->tpl)
             create_tpl_ref_buf_descs(enc_handle_ptr);
@@ -3769,7 +3781,8 @@ static void set_param_based_on_input(SequenceControlSet *scs)
         scs->static_config.resize_mode > RESIZE_NONE ||
         scs->static_config.rtc ||
         (scs->input_resolution == INPUT_SIZE_240p_RANGE) ||
-        scs->static_config.enable_variance_boost)
+        scs->static_config.enable_variance_boost ||
+        scs->static_config.oja_boost)
         scs->super_block_size = 64;
     else if (allintra) {
         if (scs->input_resolution <= INPUT_SIZE_1080p_RANGE) {
@@ -3821,9 +3834,17 @@ static void set_param_based_on_input(SequenceControlSet *scs)
         scs->static_config.enable_variance_boost = false;
         SVT_WARN("Variance Boost is incompatible with CBR rate control, disabling Variance Boost\n");
     }
+    if (scs->static_config.oja_boost > 0 && scs->static_config.rate_control_mode == SVT_AV1_RC_MODE_CBR) {
+        scs->static_config.oja_boost = 0;
+        SVT_WARN("Oja Boost is not supported in CBR mode, disabling it.\n");
+    }
     if (scs->static_config.enable_variance_boost && scs->static_config.aq_mode == 1) {
         scs->static_config.enable_variance_boost = false;
         SVT_WARN("Variance AQ based on segmentation with Variance Boost not supported, disabling Variance Boost\n");
+    }
+    if (scs->static_config.oja_boost > 0 && scs->static_config.aq_mode == 1) {
+        scs->static_config.oja_boost = 0;
+        SVT_WARN("Oja Boost is not supported with aq-mode 1, disabling it.\n");
     }
     if (scs->static_config.variance_boost_strength >= 4) {
         SVT_WARN("Aggressive Variance Boost strength used. This is a curve that's only useful under specific situations. Use with caution!\n");
@@ -4042,7 +4063,8 @@ static void set_param_based_on_input(SequenceControlSet *scs)
         scs->static_config.aq_mode == 1 ||
         scs->static_config.scene_change_detection == 1       ||
         scs->vq_ctrls.sharpness_ctrls.tf == 1                ||
-        scs->static_config.enable_variance_boost)
+        scs->static_config.enable_variance_boost             ||
+        scs->static_config.oja_boost > 0)
         scs->calculate_variance = 1;
     else
         scs->calculate_variance = 0;
@@ -4489,6 +4511,9 @@ static void copy_api_from_app(SequenceControlSet *scs, EbSvtAv1EncConfiguration 
 
     // Alternative SSIM tuning
     scs->static_config.alt_ssim_tuning = config_struct->alt_ssim_tuning;
+
+    // Oja's Boost
+    scs->static_config.oja_boost = config_struct->oja_boost;
 
     // TX bias
     scs->static_config.tx_bias = config_struct->tx_bias;

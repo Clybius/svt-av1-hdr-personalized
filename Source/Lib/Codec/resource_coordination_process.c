@@ -409,7 +409,7 @@ static EbErrorType reset_pcs_av1(PictureParentControlSet *pcs) {
     frm_hdr->delta_lf_params.delta_lf_present = 0;
 
     frm_hdr->delta_q_params.delta_q_res = get_delta_q_res((uint8_t)pcs->scs->static_config.qp,
-                                                          pcs->scs->static_config.enable_variance_boost);
+                                                          pcs->scs->static_config.enable_variance_boost || pcs->scs->static_config.oja_boost > 0);
 
     frm_hdr->delta_lf_params.delta_lf_present = 0;
     frm_hdr->delta_lf_params.delta_lf_res     = 0;

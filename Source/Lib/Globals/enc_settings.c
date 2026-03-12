@@ -1052,6 +1052,7 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->enable_roi_map                    = false;
     config_ptr->fgs_table                         = NULL;
     config_ptr->enable_variance_boost             = true;
+    config_ptr->oja_boost                         = 0;
     config_ptr->variance_boost_strength           = 2;
     config_ptr->variance_octile                   = 5;
     config_ptr->tf_strength                       = 1;
@@ -2217,6 +2218,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"complex-hvs", &config_struct->complex_hvs},
         {"noise-adaptive-filtering", &config_struct->noise_adaptive_filtering},
         {"cdef-scaling", &config_struct->cdef_scaling},
+        {"oja-boost", &config_struct->oja_boost},
     };
     const size_t uint8_opts_size = sizeof(uint8_opts) / sizeof(uint8_opts[0]);
 
