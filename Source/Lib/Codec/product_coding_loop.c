@@ -4847,6 +4847,35 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
     } else if (ssim_level == SSIM_LVL_2) {
         // it doesn't need to update y_full_distortion[DIST_SSIM] since ssim is only used to select best tx type
     }
+    
+    if (ctx->tune_daala_level) {
+        EbPictureBufferDesc *daala_recon_ptr = (best_tx_type == DCT_DCT) ? cand_bf->recon : ctx->recon_ptr[best_tx_type];
+        uint64_t daala_pred_dist = svt_spatial_full_distortion_daala_kernel(
+            input_pic->buffer_y,
+            input_txb_origin_index,
+            input_pic->stride_y,
+            cand_bf->pred->buffer_y,
+            (int32_t)txb_origin_index,
+            cand_bf->pred->stride_y,
+            cropped_tx_width,
+            cropped_tx_height,
+            ctx->hbd_md,
+            qindex);
+        uint64_t daala_residual_dist = svt_spatial_full_distortion_daala_kernel(
+            input_pic->buffer_y,
+            input_txb_origin_index,
+            input_pic->stride_y,
+            daala_recon_ptr->buffer_y,
+            (int32_t)txb_origin_index,
+            cand_bf->recon->stride_y,
+            cropped_tx_width,
+            cropped_tx_height,
+            ctx->hbd_md,
+            qindex);
+
+        y_full_distortion[DIST_DAALA][DIST_CALC_PREDICTION] += daala_pred_dist;
+        y_full_distortion[DIST_DAALA][DIST_CALC_RESIDUAL] += daala_residual_dist;
+    }
 
     y_full_distortion[DIST_SSD][DIST_CALC_RESIDUAL] +=
         txb_full_distortion_txt[DIST_SSD][best_tx_type][DIST_CALC_RESIDUAL];
@@ -5768,7 +5797,7 @@ static void full_loop_core_light_pd0(PictureControlSet *pcs, ModeDecisionContext
 
     perform_tx_light_pd0(pcs, ctx, cand_bf, ctx->blk_ptr->qindex, &y_coeff_bits, &y_full_distortion[0]);
     cand_bf->cnt_nz_coeff = cand_bf->eob.y[0];
-    svt_aom_full_cost_light_pd0(ctx, cand_bf, y_full_distortion, full_lambda, &y_coeff_bits);
+    svt_aom_full_cost_light_pd0(ctx, cand_bf, y_full_distortion, full_lambda, &y_coeff_bits, DIST_SSD);
 }
 extern const uint8_t  svt_aom_eb_av1_var_offs[MAX_SB_SIZE];
 static const uint16_t eb_av1_var_offs_hbd[MAX_SB_SIZE] = {
@@ -6257,7 +6286,8 @@ static void full_loop_core_light_pd1(PictureControlSet *pcs, ModeDecisionContext
                           cr_full_distortion,
                           &y_coeff_bits,
                           &cb_coeff_bits,
-                          &cr_coeff_bits);
+                          &cr_coeff_bits,
+                          DIST_SSD);
     } else {
         // Only need chroma pred if generating recon
         if (ctx->lpd1_chroma_comp > COMPONENT_LUMA) {
@@ -6586,7 +6616,8 @@ static void full_loop_core(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                       cr_full_distortion,
                       &y_coeff_bits,
                       &cb_coeff_bits,
-                      &cr_coeff_bits);
+                      &cr_coeff_bits,
+                      DIST_SSD);
 }
 static void md_stage_1(PictureControlSet *pcs, ModeDecisionContext *ctx, EbPictureBufferDesc *input_pic,
                        BlockLocation *loc) {

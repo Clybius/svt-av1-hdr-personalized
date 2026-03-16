@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 *
 * This source code is subject to the terms of the BSD 3-Clause Clear License and
@@ -648,6 +648,13 @@ typedef struct EbSvtAv1EncConfiguration {
      * Default is 1.
      */
     uint8_t tune;
+
+    /**
+     * @brief Enable Daala distortion metric.
+     * 0 = off, 1 = on
+     * Default is 0.
+     */
+    bool enable_daala;
 
     // super-resolution parameters
     uint8_t superres_mode;

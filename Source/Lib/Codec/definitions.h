@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 * Copyright (c) 2016, Alliance for Open Media. All rights reserved
 *
@@ -2053,7 +2053,8 @@ typedef enum DistType
 {
     DIST_SSD = 0,
     DIST_SSIM = 1,
-    DIST_TOTAL = 2
+    DIST_DAALA = 2,
+    DIST_TOTAL = 3
 } DistType;
 
 typedef enum EbPtrType

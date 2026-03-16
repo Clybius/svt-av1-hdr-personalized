@@ -509,8 +509,8 @@ EbErrorType svt_av1_verify_settings(SequenceControlSet *scs) {
     }
     if (config->tune > TUNE_FILM_GRAIN) {
         SVT_ERROR(
-            "Invalid tune flag [0 - 5: 0 for VQ, 1 for PSNR, 2 for SSIM, 3 for IQ, 4 for MS_SSIM and 5 "
-            "for Film Grain], "
+            "Invalid tune flag [0 - 5: 0 for VQ, 1 for PSNR, 2 for SSIM, 3 for IQ, 4 for MS_SSIM, 5 for "
+            "Film Grain], "
             "your input: %d\n",
             config->tune);
         return_error = EB_ErrorBadParameter;
@@ -1008,6 +1008,7 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->enable_tf       = 1;
     config_ptr->enable_overlays = false;
     config_ptr->tune            = 1;
+    config_ptr->enable_daala    = false;
     // Super-resolution default values
     config_ptr->superres_mode      = SUPERRES_NONE;
     config_ptr->superres_denom     = SCALE_NUMERATOR;
@@ -2341,6 +2342,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"adaptive-film-grain", &config_struct->adaptive_film_grain},
         {"alt-lambda-factors", &config_struct->alt_lambda_factors},
         {"alt-ssim-tuning", &config_struct->alt_ssim_tuning},
+        {"enable-daala", &config_struct->enable_daala},
     };
     const size_t bool_opts_size = sizeof(bool_opts) / sizeof(bool_opts[0]);
 
