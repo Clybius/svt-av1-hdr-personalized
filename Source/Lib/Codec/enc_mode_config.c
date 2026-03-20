@@ -7098,7 +7098,8 @@ void svt_aom_sig_deriv_enc_dec(SequenceControlSet *scs, PictureControlSet *pcs, 
         skip_sub_depth_lvl = 2;
 
     set_skip_sub_depth_ctrls(&ctx->skip_sub_depth_ctrls, skip_sub_depth_lvl);
-    ctx->tune_ssim_level = SSIM_LVL_0;
+    ctx->tune_ssim_level  = SSIM_LVL_0;
+    ctx->tune_daala_level = scs->static_config.enable_daala;
 }
 /*
 * return the 4x4 level
