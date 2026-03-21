@@ -2017,21 +2017,6 @@ static void model_rd_for_sb(PictureControlSet *pcs, EbPictureBufferDesc *predict
                                              effective_ac_bias)
                     << shift;
             }
-            if (ctx->tune_daala_level >= 2) {
-                const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
-                sse += svt_spatial_full_distortion_daala_kernel(input_pic->buffer_y,
-                                                                input_offset,
-                                                                input_pic->stride_y << shift,
-                                                                prediction_ptr->buffer_y,
-                                                                prediction_offset,
-                                                                prediction_ptr->stride_y << shift,
-                                                                ctx->blk_geom->bwidth,
-                                                                ctx->blk_geom->bheight >> shift,
-                                                                hbd,
-                                                                qindex,
-                                                                1)
-                    << shift;
-            }
             break;
         case 1:
             sse = spatial_full_dist_type_fun(input_pic->buffer_cb,

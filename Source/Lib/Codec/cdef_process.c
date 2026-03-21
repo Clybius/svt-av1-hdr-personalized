@@ -331,7 +331,7 @@ static void cdef_seg_search(PictureControlSet *pcs, SequenceControlSet *scs, uin
     FrameHeader                    *frm_hdr  = &ppcs->frm_hdr;
     Av1Common                      *cm       = ppcs->av1_cm;
     const bool                      is_16bit = scs->is_16bit_pipeline;
-    const uint8_t    use_daala_cdef = scs->static_config.enable_daala >= 3;
+    const uint8_t    use_daala_cdef = scs->static_config.enable_daala >= 2;
     const int32_t    qindex         = frm_hdr->quantization_params.base_q_idx;
     uint32_t                        x_seg_idx;
     uint32_t                        y_seg_idx;
