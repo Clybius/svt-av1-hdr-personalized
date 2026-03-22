@@ -223,7 +223,7 @@ int  svt_av1_allow_palette(int allow_palette, BlockSize bsize);
 bool svt_av1_is_lossless_segment(PictureControlSet *pcs, int8_t segment_id);
 uint64_t svt_spatial_full_distortion_daala_kernel(uint8_t *input, uint32_t input_offset, uint32_t input_stride,
                                                   uint8_t *recon, int32_t recon_offset, uint32_t recon_stride,
-                                                  uint32_t area_width, uint32_t area_height, bool hbd,
+                                                  uint32_t area_width, uint32_t area_height, uint32_t bit_depth,
                                                   int32_t qindex, int activity_masking);
 #ifdef __cplusplus
 }

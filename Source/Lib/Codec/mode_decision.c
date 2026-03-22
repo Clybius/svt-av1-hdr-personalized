@@ -3742,7 +3742,7 @@ uint32_t svt_aom_product_full_mode_decision(
     // Find the candidate with the lowest cost
     // Only need to sort if have multiple candidates
     if (ctx->md_stage_3_total_count > 1) {
-        if (ctx->tune_daala_level >= 1) {
+        if (ctx->tune_daala_level >= 2) {
             // Pass one: find candidate with the lowest SSD cost
             uint64_t ssd_lowest_cost = 0xFFFFFFFFFFFFFFFFull;
             for (uint32_t i = 0; i < candidate_total_count; ++i) {
@@ -4374,26 +4374,47 @@ uint64_t svt_spatial_full_distortion_daala_kernel(uint8_t* input, uint32_t input
                                                    uint32_t input_stride, uint8_t* recon,
                                                    int32_t recon_offset, uint32_t recon_stride,
                                                    uint32_t area_width, uint32_t area_height,
-                                                   bool hbd, int32_t qindex, int activity_masking) {
+                                                   uint32_t bit_depth, int32_t qindex, int activity_masking) {
     uint64_t total_distortion = 0;
 
-    if (!hbd) {
-        // Need to convert 8-bit to 16-bit for DAALA dist function
-        DECLARE_ALIGNED(16, uint16_t, input_16bit[MAX_TX_SQUARE]);
-        DECLARE_ALIGNED(16, uint16_t, recon_16bit[MAX_TX_SQUARE]);
-        
+    // Need to convert 8-bit to 16-bit for DAALA dist function, or pad if area < 8x8
+    DECLARE_ALIGNED(16, uint16_t, input_16bit[MAX_TX_SQUARE]);
+    DECLARE_ALIGNED(16, uint16_t, recon_16bit[MAX_TX_SQUARE]);
+
+    // Zero-initialize to ensure determinism for padded areas
+    svt_memset(input_16bit, 0, sizeof(input_16bit));
+    svt_memset(recon_16bit, 0, sizeof(recon_16bit));
+
+    // DAALA dist function requires at least 8x8 blocks and multiples of 8.
+    // If the area is smaller than 8, we pad it to 8.
+    uint32_t calc_width = area_width < 8 ? 8 : area_width;
+    uint32_t calc_height = area_height < 8 ? 8 : area_height;
+
+    if (bit_depth == 8) {
         for (uint32_t i = 0; i < area_height; i++) {
             for (uint32_t j = 0; j < area_width; j++) {
-                input_16bit[i * area_width + j] = input[input_offset + i * input_stride + j];
-                recon_16bit[i * area_width + j] = recon[recon_offset + i * recon_stride + j];
+                input_16bit[i * calc_width + j] = input[input_offset + i * input_stride + j];
+                recon_16bit[i * calc_width + j] = recon[recon_offset + i * recon_stride + j];
             }
         }
-        
-        total_distortion = (uint64_t)svt_aom_od_compute_dist(input_16bit, recon_16bit, area_width, area_height, qindex, activity_masking);
     } else {
-        total_distortion = (uint64_t)svt_aom_od_compute_dist((uint16_t *)input + input_offset, (uint16_t *)recon + recon_offset, 
-                                                              area_width, area_height, qindex, activity_masking);
+        uint32_t coeff_shift = bit_depth - 8;
+        const uint16_t* input16 = (uint16_t*)input + input_offset;
+        const uint16_t* recon16 = (uint16_t*)recon + recon_offset;
+        for (uint32_t i = 0; i < area_height; i++) {
+            for (uint32_t j = 0; j < area_width; j++) {
+                input_16bit[i * calc_width + j] = input16[i * input_stride + j] >> coeff_shift;
+                recon_16bit[i * calc_width + j] = recon16[i * recon_stride + j] >> coeff_shift;
+            }
+        }
     }
+
+    total_distortion = (uint64_t)svt_aom_od_compute_dist(input_16bit,
+                                                        recon_16bit,
+                                                        calc_width,
+                                                        calc_height,
+                                                        qindex,
+                                                        activity_masking);
 
     return total_distortion;
 }

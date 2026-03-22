@@ -281,7 +281,7 @@ static uint64_t compute_cdef_dist(const EbByte dst, int32_t doffset, int32_t dst
  * is_16bit: whether the pipeline is 16-bit
  */
 static uint64_t compute_cdef_dist_daala(const EbByte dst, int32_t doffset, int32_t dstride, const uint8_t *src,
-                                        const CdefList *dlist, int32_t cdef_count, int32_t qindex, bool is_16bit) {
+                                        const CdefList *dlist, int32_t cdef_count, int32_t qindex, int32_t coeff_shift, bool is_16bit) {
     double total_dist = 0;
     DECLARE_ALIGNED(16, uint16_t, ref_blk[8 * 8]);
     DECLARE_ALIGNED(16, uint16_t, filt_blk[8 * 8]);
@@ -295,7 +295,7 @@ static uint64_t compute_cdef_dist_daala(const EbByte dst, int32_t doffset, int32
             const uint16_t *ref16 = ((const uint16_t *)dst) + doffset;
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
-                    ref_blk[i * 8 + j] = ref16[(by << 3) * dstride + (bx << 3) + i * dstride + j];
+                    ref_blk[i * 8 + j] = ref16[(by << 3) * dstride + (bx << 3) + i * dstride + j] >> coeff_shift;
         } else {
             const uint8_t *ref8 = dst + doffset;
             for (int i = 0; i < 8; i++)
@@ -308,7 +308,7 @@ static uint64_t compute_cdef_dist_daala(const EbByte dst, int32_t doffset, int32
             const uint16_t *src16 = (const uint16_t *)src;
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
-                    filt_blk[i * 8 + j] = src16[(bi << 6) + i * 8 + j];
+                    filt_blk[i * 8 + j] = src16[(bi << 6) + i * 8 + j] >> coeff_shift;
         } else {
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
@@ -331,7 +331,7 @@ static void cdef_seg_search(PictureControlSet *pcs, SequenceControlSet *scs, uin
     FrameHeader                    *frm_hdr  = &ppcs->frm_hdr;
     Av1Common                      *cm       = ppcs->av1_cm;
     const bool                      is_16bit = scs->is_16bit_pipeline;
-    const uint8_t    use_daala_cdef = scs->static_config.enable_daala >= 2;
+    const uint8_t    use_daala_cdef = scs->static_config.enable_daala >= 1;
     const int32_t    qindex         = frm_hdr->quantization_params.base_q_idx;
     uint32_t                        x_seg_idx;
     uint32_t                        y_seg_idx;
@@ -531,6 +531,7 @@ static void cdef_seg_search(PictureControlSet *pcs, SequenceControlSet *scs, uin
                             dlist,
                             cdef_count,
                             qindex,
+                            coeff_shift,
                             is_16bit);
                     } else {
                         curr_mse = compute_cdef_dist(
@@ -595,6 +596,7 @@ static void cdef_seg_search(PictureControlSet *pcs, SequenceControlSet *scs, uin
                             dlist,
                             cdef_count,
                             qindex,
+                            coeff_shift,
                             is_16bit);
                     } else {
                         curr_mse = compute_cdef_dist(

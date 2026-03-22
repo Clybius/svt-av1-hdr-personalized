@@ -12,6 +12,7 @@
 #include <math.h>
 #include <limits.h>
 #include "daala_dist.h"
+#include "common_dsp_rtcd.h"
 
 #define OD_MINI(a, b) ((a) < (b) ? (a) : (b))
 #define OD_MAXI(a, b) ((a) > (b) ? (a) : (b))
@@ -105,6 +106,9 @@ double svt_aom_od_compute_dist(uint16_t *x, uint16_t *y, int bsize_w,
     DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
     DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
     DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
+    svt_memset(e, 0, sizeof(e));
+    svt_memset(tmp, 0, sizeof(tmp));
+    svt_memset(e_lp, 0, sizeof(e_lp));
     for (i = 0; i < bsize_h; i++) {
         for (j = 0; j < bsize_w; j++) {
             e[i * bsize_w + j] = x[i * bsize_w + j] - y[i * bsize_w + j];

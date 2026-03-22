@@ -998,7 +998,7 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer *cand_bf, Pictu
                                                                effective_ac_bias)
                     << 1;
             }
-            if (ctx->tune_daala_level >= 1) {
+            if (ctx->tune_daala_level >= 2) {
                 const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                 *(cand_bf->fast_cost) += svt_spatial_full_distortion_daala_kernel(
                                                                input_pic->buffer_y,
@@ -1009,7 +1009,7 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer *cand_bf, Pictu
                                                                ref_pic->stride_y << 1,
                                                                ctx->blk_geom->bwidth,
                                                                ctx->blk_geom->bheight >> 1,
-                                                               ctx->hbd_md,
+                                                               pcs->scs->static_config.encoder_bit_depth,
                                                                qindex,
                                                                1)
                     << 1;
@@ -4655,7 +4655,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                         ctx->hbd_md,
                         effective_ac_bias);
                 }
-                if (ctx->tune_daala_level >= 1) {
+                if (ctx->tune_daala_level >= 2) {
                     const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                     txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_PREDICTION] = svt_spatial_full_distortion_daala_kernel(
                         input_pic->buffer_y,
@@ -4666,7 +4666,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                         cand_bf->pred->stride_y,
                         cropped_tx_width,
                         cropped_tx_height,
-                        ctx->hbd_md,
+                        pcs->scs->static_config.encoder_bit_depth,
                         qindex,
                         1);
                 }
@@ -4698,7 +4698,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                         ctx->hbd_md,
                         effective_ac_bias);
                 }
-                if (ctx->tune_daala_level >= 1) {
+                if (ctx->tune_daala_level >= 2) {
                     const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                     txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_RESIDUAL] = svt_spatial_full_distortion_daala_kernel(
                         input_pic->buffer_y,
@@ -4709,13 +4709,13 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                         cand_bf->recon->stride_y,
                         cropped_tx_width,
                         cropped_tx_height,
-                        ctx->hbd_md,
+                        pcs->scs->static_config.encoder_bit_depth,
                         qindex,
                         1);
                 }
                 txb_full_distortion_txt[DIST_SSD][tx_type][DIST_CALC_PREDICTION] <<= 4;
                 txb_full_distortion_txt[DIST_SSD][tx_type][DIST_CALC_RESIDUAL] <<= 4;
-                if (ctx->tune_daala_level >= 1) {
+                if (ctx->tune_daala_level >= 2) {
                     txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_PREDICTION] <<= 4;
                     txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_RESIDUAL] <<= 4;
                 }
@@ -4757,7 +4757,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                 txb_full_distortion_txt[DIST_SSD][tx_type][DIST_CALC_RESIDUAL] << ctx->mds_subres_step;
             txb_full_distortion_txt[DIST_SSD][tx_type][DIST_CALC_PREDICTION] =
                 txb_full_distortion_txt[DIST_SSD][tx_type][DIST_CALC_PREDICTION] << ctx->mds_subres_step;
-            if (ctx->tune_daala_level >= 1) {
+            if (ctx->tune_daala_level >= 2) {
                 txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_RESIDUAL] =
                     txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_RESIDUAL] << ctx->mds_subres_step;
                 txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_PREDICTION] =
@@ -4828,7 +4828,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
         }
     }
 
-    if (ctx->tune_daala_level >= 1) {
+    if (ctx->tune_daala_level >= 2) {
         const uint64_t ssd_cost_threshold       = (uint64_t)(cost_threshold_factor * best_cost_tx_search);
         uint64_t       best_daala_cost_tx_search = (uint64_t)~0;
         for (int i = 0; i < candidate_num; ++i) {
@@ -4957,7 +4957,7 @@ static void tx_type_search(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
         // it doesn't need to update y_full_distortion[DIST_SSIM] since ssim is only used to select best tx type
     }
     
-    if (ctx->tune_daala_level >= 1) {
+    if (ctx->tune_daala_level >= 2) {
         y_full_distortion[DIST_DAALA][DIST_CALC_PREDICTION] +=
             txb_full_distortion_txt[DIST_DAALA][best_tx_type][DIST_CALC_PREDICTION];
         y_full_distortion[DIST_DAALA][DIST_CALC_RESIDUAL] +=
@@ -5704,7 +5704,7 @@ static void perform_dct_dct_tx(PictureControlSet *pcs, ModeDecisionContext *ctx,
                                                                                        ctx->hbd_md,
                                                                                        effective_ac_bias);
         }
-        if (ctx->tune_daala_level >= 3) {
+        if (ctx->tune_daala_level >= 2) {
             const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
             y_full_distortion[DIST_DAALA][DIST_CALC_PREDICTION] = svt_spatial_full_distortion_daala_kernel(
                 input_pic->buffer_y,
@@ -5715,7 +5715,7 @@ static void perform_dct_dct_tx(PictureControlSet *pcs, ModeDecisionContext *ctx,
                 cand_bf->pred->stride_y,
                 cropped_tx_width,
                 cropped_tx_height,
-                ctx->hbd_md,
+                pcs->scs->static_config.encoder_bit_depth,
                 qindex,
                 1);
         }
@@ -5747,7 +5747,7 @@ static void perform_dct_dct_tx(PictureControlSet *pcs, ModeDecisionContext *ctx,
                                                                                      ctx->hbd_md,
                                                                                      effective_ac_bias);
         }
-        if (ctx->tune_daala_level >= 3) {
+        if (ctx->tune_daala_level >= 2) {
             const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
             y_full_distortion[DIST_DAALA][DIST_CALC_RESIDUAL] = svt_spatial_full_distortion_daala_kernel(
                 input_pic->buffer_y,
@@ -5758,13 +5758,13 @@ static void perform_dct_dct_tx(PictureControlSet *pcs, ModeDecisionContext *ctx,
                 cand_bf->recon->stride_y,
                 cropped_tx_width,
                 cropped_tx_height,
-                ctx->hbd_md,
+                pcs->scs->static_config.encoder_bit_depth,
                 qindex,
                 1);
         }
         y_full_distortion[DIST_SSD][DIST_CALC_PREDICTION] <<= 4;
         y_full_distortion[DIST_SSD][DIST_CALC_RESIDUAL] <<= 4;
-        if (ctx->tune_daala_level >= 3) {
+        if (ctx->tune_daala_level >= 2) {
             y_full_distortion[DIST_DAALA][DIST_CALC_PREDICTION] <<= 4;
             y_full_distortion[DIST_DAALA][DIST_CALC_RESIDUAL] <<= 4;
         }
@@ -6418,7 +6418,7 @@ static void full_loop_core_light_pd1(PictureControlSet *pcs, ModeDecisionContext
                           &y_coeff_bits,
                           &cb_coeff_bits,
                           &cr_coeff_bits,
-                          DIST_SSD);
+                          ctx->tune_daala_level >= 2 ? DIST_DAALA : DIST_SSD);
     } else {
         // Only need chroma pred if generating recon
         if (ctx->lpd1_chroma_comp > COMPONENT_LUMA) {
@@ -6748,7 +6748,7 @@ static void full_loop_core(PictureControlSet *pcs, ModeDecisionContext *ctx, Mod
                       &y_coeff_bits,
                       &cb_coeff_bits,
                       &cr_coeff_bits,
-                      DIST_SSD);
+                      ctx->tune_daala_level >= 2 ? DIST_DAALA : DIST_SSD);
 }
 static void md_stage_1(PictureControlSet *pcs, ModeDecisionContext *ctx, EbPictureBufferDesc *input_pic,
                        BlockLocation *loc) {
