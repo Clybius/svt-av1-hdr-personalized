@@ -2020,6 +2020,21 @@ static void model_rd_for_sb(PictureControlSet* pcs, EbPictureBufferDesc* predict
         const uint8_t   current_q_index = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
         Dequants* const dequants        = ctx->hbd_md ? &scs->enc_ctx->deq_bd : &scs->enc_ctx->deq_8bit;
         int16_t         quantizer       = dequants->y_dequant_qtx[current_q_index][1];
+
+        if (ctx->tune_daala_level >= 3) {
+            sse += svt_spatial_full_distortion_daala_kernel(input_pic->buffer_y,
+                                                                input_offset,
+                                                                input_pic->stride_y << shift,
+                                                                prediction_ptr->buffer_y,
+                                                                prediction_offset,
+                                                                prediction_ptr->stride_y << shift,
+                                                                ctx->blk_geom->bwidth,
+                                                                ctx->blk_geom->bheight >> shift,
+                                                                bit_depth,
+                                                                current_q_index,
+                                                                1)
+        }
+
         model_rd_from_sse(plane == 0 ? ctx->blk_geom->bsize : ctx->blk_geom->bsize_uv,
                           quantizer,
                           bit_depth,

@@ -225,6 +225,7 @@
 #define COMPLEX_HVS_TOKEN "--complex-hvs"
 #define NOISE_ADAPTIVE_FILTERING_TOKEN "--noise-adaptive-filtering"
 #define CDEF_SCALING_TOKEN "--cdef-scaling"
+#define ENABLE_DAALA_TOKEN "--enable-daala"
 
 static EbErrorType validate_error(EbErrorType err, const char* token, const char* value) {
     switch (err) {
@@ -1110,6 +1111,7 @@ ConfigDescription config_entry_psychovisual[] = {
      "on 2: default tune behavior, 3: CDEF only, 4: restoration only)]"},
     {CDEF_SCALING_TOKEN,
      "Controls scaling of the CDEF strength computation, default is 15 (1x scaling) [1: minimum, 8: ~0.5x, 30: 2x]"},
+    {ENABLE_DAALA_TOKEN, "Enable Daala distortion metric, default is 0 [0-3]"},
     // Termination
     {NULL, NULL}};
 
@@ -1234,6 +1236,7 @@ ConfigEntry config_entry[] = {
     {DG_ENABLE_NEW_TOKEN, "EnableDg", set_cfg_generic_token},
     {FAST_DECODE_TOKEN, "FastDecode", set_cfg_generic_token},
     {TUNE_TOKEN, "Tune", set_cfg_generic_token},
+    {ENABLE_DAALA_TOKEN, "EnableDaala", set_cfg_generic_token},
     //   ALT-REF filtering support
     {ENABLE_TF_TOKEN, "EnableTf", set_cfg_generic_token},
     {ENABLE_OVERLAYS, "EnableOverlays", set_cfg_generic_token},

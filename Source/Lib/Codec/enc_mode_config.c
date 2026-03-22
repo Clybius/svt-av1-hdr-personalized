@@ -7662,7 +7662,8 @@ void svt_aom_sig_deriv_enc_dec_default(PictureControlSet* pcs, ModeDecisionConte
     }
 
     set_skip_sub_depth_ctrls(&ctx->skip_sub_depth_ctrls, skip_sub_depth_lvl);
-    ctx->tune_ssim_level = SSIM_LVL_0;
+    ctx->tune_ssim_level  = SSIM_LVL_0;
+    ctx->tune_daala_level = scs->static_config.enable_daala;
 }
 
 void svt_aom_sig_deriv_enc_dec_rtc(PictureControlSet* pcs, ModeDecisionContext* ctx) {
