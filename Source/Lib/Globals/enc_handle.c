@@ -4502,6 +4502,9 @@ static void copy_api_from_app(SequenceControlSet *scs, EbSvtAv1EncConfiguration 
     // CDEF scaling
     scs->static_config.cdef_scaling = config_struct->cdef_scaling;
 
+    // Daala
+    scs->static_config.enable_daala = config_struct->enable_daala;
+
     // Override settings for Still IQ tune
     if (scs->static_config.tune == TUNE_IQ) {
         SVT_WARN("Tune IQ overrides: sharpness, Var. Boost strength/curve, enable-qm and min/max level, max TX size and SCM\n");
