@@ -1327,7 +1327,7 @@ void svt_aom_full_cost(PictureControlSet *pcs, ModeDecisionContext *ctx, struct 
                        uint64_t *cb_coeff_bits, uint64_t *cr_coeff_bits, DistType dist_type) {
     const uint8_t skip_coeff_ctx         = ctx->skip_coeff_ctx;
     const bool    update_full_cost_ssim  = ctx->tune_ssim_level > SSIM_LVL_0 ? true : false;
-    const bool    update_full_cost_daala = ctx->tune_daala_level > 0 ? true : false;
+    const bool    update_full_cost_daala = ctx->tune_daala_level > 1 ? true : false;
 
     // Get the TX size rate for skip and non-skip block. Need both to make non-skip decision
     uint64_t non_skip_tx_size_bits = 0, skip_tx_size_bits = 0;
