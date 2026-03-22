@@ -649,6 +649,14 @@ typedef struct EbSvtAv1EncConfiguration {
      */
     uint8_t tune;
 
+    /**
+     * @brief Enable Daala distortion metric.
+     * 0 = off, 1-3 = level of how much Daala distortion metric is used in the pipeline.
+     * TODO: define the levels
+     * Default is 0.
+     */
+    uint8_t enable_daala;
+
     // super-resolution parameters
     uint8_t superres_mode;
     uint8_t superres_denom;
