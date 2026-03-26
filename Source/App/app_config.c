@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 *
 * This source code is subject to the terms of the BSD 3-Clause Clear License and
@@ -1111,7 +1111,7 @@ ConfigDescription config_entry_psychovisual[] = {
      "on 2: default tune behavior, 3: CDEF only, 4: restoration only)]"},
     {CDEF_SCALING_TOKEN,
      "Controls scaling of the CDEF strength computation, default is 15 (1x scaling) [1: minimum, 8: ~0.5x, 30: 2x]"},
-    {ENABLE_DAALA_TOKEN, "Enable Daala distortion metric, default is 0 [0-3]"},
+    {ENABLE_DAALA_TOKEN, "Enable Daala distortion metric, default is 0 [0-4]"},
     // Termination
     {NULL, NULL}};
 

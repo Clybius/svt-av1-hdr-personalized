@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright(c) 2019 Intel Corporation
 *
 * This source code is subject to the terms of the BSD 3-Clause Clear License and
@@ -655,7 +655,7 @@ typedef struct EbSvtAv1EncConfiguration {
 
     /**
      * @brief Enable Daala distortion metric.
-     * 0 = off, 1-3 = level of how much Daala distortion metric is used in the pipeline.
+     * 0 = off, 1-4 = level of how much Daala distortion metric is used in the pipeline.
      * TODO: define the levels
      * Default is 0.
      */
