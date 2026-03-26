@@ -2017,7 +2017,7 @@ static void model_rd_for_sb(PictureControlSet *pcs, EbPictureBufferDesc *predict
                                              effective_ac_bias)
                     << shift;
             }
-            if (ctx->tune_daala_level >= 3) {
+            if (ctx->tune_daala_level >= 4) {
                 const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                 sse += svt_spatial_full_distortion_daala_kernel(input_pic->buffer_y,
                                                                 input_offset,

@@ -998,7 +998,7 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer *cand_bf, Pictu
                                                                effective_ac_bias)
                     << 1;
             }
-            if (ctx->tune_daala_level >= 3) {
+            if (ctx->tune_daala_level >= 4) {
                 const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                 *(cand_bf->fast_cost) += svt_spatial_full_distortion_daala_kernel(
                                                                input_pic->buffer_y,
