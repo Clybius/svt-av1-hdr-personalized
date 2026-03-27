@@ -211,6 +211,7 @@ typedef struct DenoiseAndModelInitData {
     uint16_t stride_cb;
     uint16_t stride_cr;
     uint8_t  denoise_apply;
+    uint8_t  denoise_strength_pct;
     bool     adaptive_film_grain;
 } DenoiseAndModelInitData;
 
@@ -239,6 +240,7 @@ typedef struct AomDenoiseAndModel {
     AomFlatBlockFinder flat_block_finder;
     AomNoiseModel      noise_model;
     uint8_t            denoise_apply;
+    uint8_t            denoise_strength_pct;
 } AomDenoiseAndModel;
 
 /************************************

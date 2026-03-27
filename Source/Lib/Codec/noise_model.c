@@ -69,7 +69,7 @@ static INLINE double get_block_mean(const uint8_t *data, int32_t w, int32_t h, i
                                          int32_t         x_o,                                                       \
                                          int32_t         y_o,                                                       \
                                          int32_t         block_size_x,                                              \
-                                         int32_t         block_size_y) {                                                    \
+                                         int32_t         block_size_y) {                                            \
         const int32_t max_h      = AOMMIN(h - y_o, block_size_y);                                                   \
         const int32_t max_w      = AOMMIN(w - x_o, block_size_x);                                                   \
         double        noise_var  = 0;                                                                               \
@@ -582,11 +582,11 @@ int32_t svt_aom_flat_block_finder_run(const AomFlatBlockFinder *block_finder, co
                 // The weights are given in the following order:
                 //    [{var}, {ratio}, {trace}, {norm}, offset]
                 // with one of the most discriminative being simply the variance.
-                const double weights[5]              = {-6682, -0.2056, 13087, -12434, 2.5694};
-                const float  score                   = (float)(1.0 /
-                                            (1 +
-                                             exp(-(weights[0] * var + weights[1] * ratio + weights[2] * trace +
-                                                   weights[3] * norm + weights[4]))));
+                const double weights[5] = {-6682, -0.2056, 13087, -12434, 2.5694};
+                const float  score      = (float)(1.0 /
+                                                  (1 +
+                                                   exp(-(weights[0] * var + weights[1] * ratio + weights[2] * trace +
+                                                         weights[3] * norm + weights[4]))));
                 flat_blocks[by * num_blocks_w + bx]  = is_flat ? 255 : 0;
                 scores[by * num_blocks_w + bx].score = var > k_var_threshold ? score : 0;
                 scores[by * num_blocks_w + bx].index = by * num_blocks_w + bx;
@@ -718,7 +718,7 @@ void svt_aom_noise_model_free(AomNoiseModel *model) {
                                           int32_t               alt_stride,              \
                                           int32_t               x,                       \
                                           int32_t               y,                       \
-                                          double               *buffer) {                              \
+                                          double               *buffer) {                \
         for (int32_t i = 0; i < num_coords; ++i) {                                       \
             const int32_t x_i = x + coords[i][0], y_i = y + coords[i][1];                \
             buffer[i] = (double)data[y_i * stride + x_i] - denoised[y_i * stride + x_i]; \
@@ -831,7 +831,7 @@ static int32_t add_block_observations(AomNoiseModel *noise_model, int32_t c, con
             int32_t x_start = (bx > 0 && flat_blocks[by * num_blocks_w + bx - 1]) ? 0 : lag;
             int32_t y_end   = AOMMIN((h >> sub_log2[1]) - by * (block_size >> sub_log2[1]), block_size >> sub_log2[1]);
             int32_t x_end   = AOMMIN((w >> sub_log2[0]) - bx * (block_size >> sub_log2[0]) - lag,
-                                   (bx + 1 < num_blocks_w && flat_blocks[by * num_blocks_w + bx + 1])
+                                     (bx + 1 < num_blocks_w && flat_blocks[by * num_blocks_w + bx + 1])
                                          ? (block_size >> sub_log2[0])
                                          : ((block_size >> sub_log2[0]) - lag));
             for (int32_t y = y_start; y < y_end; ++y) {
@@ -908,16 +908,16 @@ static void add_noise_std_observations(AomNoiseModel *noise_model, int32_t c, co
                                                          y_o << sub_log2[1],
                                                          block_size,
                                                          noise_model->params.use_highbd);
-                const double noise_var = get_noise_var(data,
-                                                       denoised,
-                                                       stride,
-                                                       w >> sub_log2[0],
-                                                       h >> sub_log2[1],
-                                                       x_o,
-                                                       y_o,
-                                                       block_size >> sub_log2[0],
-                                                       block_size >> sub_log2[1],
-                                                       noise_model->params.use_highbd);
+                const double noise_var  = get_noise_var(data,
+                                                        denoised,
+                                                        stride,
+                                                        w >> sub_log2[0],
+                                                        h >> sub_log2[1],
+                                                        x_o,
+                                                        y_o,
+                                                        block_size >> sub_log2[0],
+                                                        block_size >> sub_log2[1],
+                                                        noise_model->params.use_highbd);
                 // We want to remove the part of the noise that came from being
                 // correlated with luma. Note that the noise solver for luma must
                 // have already been run.
@@ -1950,13 +1950,13 @@ static const float *get_half_cos_window(int32_t block_size) {
                                              int32_t   chroma_sub_w,                                                    \
                                              int32_t   chroma_sub_h,                                                    \
                                              int32_t   block_size,                                                      \
-                                             float     block_normalization) {                                               \
+                                             float     block_normalization) {                                           \
         for (int32_t y = 0; y < (h >> chroma_sub_h); ++y) {                                                             \
             for (int32_t x = 0; x < (w >> chroma_sub_w); ++x) {                                                         \
                 const int32_t result_idx = (y + (block_size >> chroma_sub_h)) * result_stride + x +                     \
                     (block_size >> chroma_sub_w);                                                                       \
                 INT_TYPE    new_val      = (INT_TYPE)AOMMIN(AOMMAX(result[result_idx] * block_normalization + 0.5f, 0), \
-                                                    block_normalization);                                       \
+                                                            block_normalization);                                       \
                 const float err          = -(((float)new_val) / block_normalization - result[result_idx]);              \
                 denoised[y * stride + x] = new_val;                                                                     \
                 if (x + 1 < (w >> chroma_sub_w)) {                                                                      \
@@ -2179,7 +2179,8 @@ EbErrorType svt_aom_denoise_and_model_ctor(AomDenoiseAndModel *object_ptr, EbPtr
         EB_CALLOC_ARRAY(object_ptr->packed[2], (object_ptr->uv_stride * (object_ptr->height >> chroma_sub_log2[0])));
     }
 
-    object_ptr->denoise_apply = init_data_ptr->denoise_apply;
+    object_ptr->denoise_apply        = init_data_ptr->denoise_apply;
+    object_ptr->denoise_strength_pct = init_data_ptr->denoise_strength_pct;
 
     return return_error;
 }
@@ -2290,6 +2291,8 @@ int32_t svt_aom_denoise_and_model_run(struct AomDenoiseAndModel *ctx, EbPictureB
     svt_aom_flat_block_finder_run(
         &ctx->flat_block_finder, data[0], sd->width, sd->height, strides[0], ctx->flat_blocks);
 
+    // Step 1: Always denoise with base strength (100%) for grain estimation
+    // This ensures grain parameters are consistent regardless of denoising strength setting
     if (!svt_aom_wiener_denoise_2d(data,
                                    ctx->denoised,
                                    sd->width,
@@ -2328,7 +2331,42 @@ int32_t svt_aom_denoise_and_model_run(struct AomDenoiseAndModel *ctx, EbPictureB
         }
         film_grain->apply_grain = 1;
 
+        // Step 2: Apply user-controlled denoising if enabled
         if (ctx->denoise_apply) {
+            // If strength is not 100%, redenoise with adjusted strength
+            // This allows independent control of denoising strength from grain generation
+            if (ctx->denoise_strength_pct != 100) {
+                // Calculate adjusted noise level based on user strength percentage
+                // 0% = minimum denoising (very low noise level)
+                // 100% = base denoising (ctx->noise_level)
+                // 1000% = maximum denoising (10x base)
+                const float strength_scale       = ctx->denoise_strength_pct / 100.0f;
+                const float adjusted_noise_level = ctx->noise_level * strength_scale;
+
+                // Recompute noise_psd with adjusted strength
+                const float y_noise_level  = svt_aom_noise_psd_get_default_value(ctx->block_size, adjusted_noise_level);
+                const float uv_noise_level = svt_aom_noise_psd_get_default_value(ctx->block_size >> chroma_sub_log2[1],
+                                                                                 adjusted_noise_level);
+                ctx->noise_psd[0]          = y_noise_level;
+                ctx->noise_psd[1] = ctx->noise_psd[2] = uv_noise_level;
+
+                // Redenoise with adjusted strength
+                if (!svt_aom_wiener_denoise_2d(data,
+                                               ctx->denoised,
+                                               sd->width,
+                                               sd->height,
+                                               strides,
+                                               chroma_sub_log2,
+                                               ctx->noise_psd,
+                                               block_size,
+                                               ctx->bit_depth,
+                                               use_highbd)) {
+                    SVT_ERROR("Unable to redenoise image with adjusted strength\n");
+                    return 0;
+                }
+            }
+
+            // Copy denoised frame to input (either base or adjusted strength)
             if (!use_highbd) {
                 if (svt_memcpy != NULL) {
                     svt_memcpy(raw_data[0], ctx->denoised[0], (strides[0] * sd->height) << use_highbd);

@@ -90,6 +90,7 @@
 #define LEVEL_TOKEN "--level"
 #define FILM_GRAIN_TOKEN "--film-grain"
 #define FILM_GRAIN_DENOISE_APPLY_TOKEN "--film-grain-denoise"
+#define FILM_GRAIN_DENOISE_STRENGTH_TOKEN "--film-grain-denoise-strength"
 #define NOISE_TOKEN "--noise"
 #define NOISE_CHROMA_TOKEN "--noise-chroma"
 #define NOISE_SIZE_TOKEN "--noise-size"
@@ -914,6 +915,10 @@ ConfigDescription config_entry_specific[] = {
      "Apply denoising when film grain is ON, default is 0 [0: no denoising, film grain data is "
      "still in frame header, 1: level of denoising is set by the film-grain parameter]"},
 
+    {FILM_GRAIN_DENOISE_STRENGTH_TOKEN,
+     "Denoising strength percentage for the input picture, default is 100 [0-255, 100 is normal/100% "
+     "strength]"},
+
     {FGS_TABLE_TOKEN, "Set the film grain model table path"},
 
     {NOISE_TOKEN, "Generate noise table for film grain. 50 is roughly equivalent to `--film-grain 50`, default is 0 [0: off, 1-100: strength value]"},
@@ -1171,6 +1176,7 @@ ConfigEntry config_entry[] = {
 #if CONFIG_ENABLE_FILM_GRAIN
     {FILM_GRAIN_TOKEN, "FilmGrain", set_cfg_generic_token},
     {FILM_GRAIN_DENOISE_APPLY_TOKEN, "FilmGrainDenoise", set_cfg_generic_token},
+    {FILM_GRAIN_DENOISE_STRENGTH_TOKEN, "FilmGrainDenoiseStrength", set_cfg_generic_token},
     {FGS_TABLE_TOKEN, "FilmGrainTable", set_cfg_fgs_table_path},
     {NOISE_TOKEN, "Noise", set_cfg_generic_token},
     {NOISE_CHROMA_TOKEN, "NoiseChroma", set_cfg_generic_token},
