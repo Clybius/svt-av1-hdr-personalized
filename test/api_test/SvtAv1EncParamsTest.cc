@@ -257,6 +257,11 @@ DEFINE_PARAM_TEST_CLASS(EncParamFilmGrainDenoiseStrTest,
                         film_grain_denoise_strength);
 PARAM_TEST(EncParamFilmGrainDenoiseStrTest);
 
+/** Test case for film_grain_denoise_strength_pct*/
+DEFINE_PARAM_TEST_CLASS(EncParamFilmGrainDenoiseStrPctTest,
+                        film_grain_denoise_strength_pct);
+PARAM_TEST(EncParamFilmGrainDenoiseStrPctTest);
+
 /** Test case for rate_control_mode*/
 DEFINE_PARAM_TEST_CLASS(EncParamRateCtrlModeTest, rate_control_mode);
 PARAM_TEST(EncParamRateCtrlModeTest);
