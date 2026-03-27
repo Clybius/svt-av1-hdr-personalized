@@ -564,14 +564,25 @@ typedef struct EbSvtAv1EncConfiguration {
     uint32_t film_grain_denoise_strength;
 
     /**
-    * @brief Determines how much denoising is used.
-    * Only applicable when film grain is ON.
-    *
-    * 0 is no denoising (default)
-    * 1 is full denoising
-    *
-    * Default is 0. */
+     * @brief Determines how much denoising is used.
+     * Only applicable when film grain is ON.
+     *
+     * 0 is no denoising (default)
+     * 1 is full denoising
+     *
+     * Default is 0. */
     uint8_t film_grain_denoise_apply;
+
+    /**
+     * @brief Controls the strength of the denoising filter.
+     * Only applicable when film_grain_denoise_apply is enabled (1).
+     * This parameter is independent from the film grain generation strength.
+     *
+     * Range: 0-255, where 100 is normal/100% strength (default).
+     * 0 applies minimum denoising, 255 applies maximum denoising.
+     *
+     * Default is 100. */
+    uint8_t film_grain_denoise_strength_pct;
 
     /* CDEF Level
     *

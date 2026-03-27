@@ -739,6 +739,11 @@ EbErrorType svt_av1_verify_settings(SequenceControlSet *scs) {
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->film_grain_denoise_strength_pct > 255) {
+        SVT_ERROR("Film grain denoise strength must be in range [0-255]\n");
+        return_error = EB_ErrorBadParameter;
+    }
+
     if (config->enable_photon_noise_chroma != 0 && config->enable_photon_noise_chroma != 1) {
         SVT_ERROR("Photon noise chroma signal can only have a value of 0 or 1.\n");
         return_error = EB_ErrorBadParameter;
@@ -990,10 +995,11 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration *config_ptr) {
     config_ptr->level   = 0;
 
     // Film grain denoising
-    config_ptr->film_grain_denoise_strength = 0;
-    config_ptr->film_grain_denoise_apply    = 0;
-    config_ptr->photon_noise_iso            = 0;
-    config_ptr->enable_photon_noise_chroma  = 0;
+    config_ptr->film_grain_denoise_strength     = 0;
+    config_ptr->film_grain_denoise_apply        = 0;
+    config_ptr->film_grain_denoise_strength_pct = 100;
+    config_ptr->photon_noise_iso                = 0;
+    config_ptr->enable_photon_noise_chroma      = 0;
 
     // CPU Flags
     config_ptr->use_cpu_flags = EB_CPU_FLAGS_ALL;
@@ -2191,6 +2197,7 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration *config_
         {"superres-kf-denom", &config_struct->superres_kf_denom},
         {"tune", &config_struct->tune},
         {"film-grain-denoise", &config_struct->film_grain_denoise_apply},
+        {"film-grain-denoise-strength", &config_struct->film_grain_denoise_strength_pct},
         {"photon-noise-chroma", &config_struct->enable_photon_noise_chroma},
         {"enable-dlf", &config_struct->enable_dlf_flag},
         {"resize-mode", &config_struct->resize_mode},
