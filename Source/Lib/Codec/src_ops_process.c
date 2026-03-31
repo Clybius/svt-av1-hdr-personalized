@@ -183,7 +183,7 @@ static void tpl_prep_info(PictureParentControlSet* pcs) {
 void generate_lambda_scaling_factor(PictureParentControlSet* pcs, int64_t mc_dep_cost_base) {
     Av1Common*   cm                    = pcs->av1_cm;
     uint8_t      tpl_synth_size_offset = pcs->tpl_ctrls.synth_blk_size == 8 ? 1
-             : pcs->tpl_ctrls.synth_blk_size == 16                          ? 2
+        : pcs->tpl_ctrls.synth_blk_size == 16                               ? 2
                                                                             : 3;
     const int    step                  = 1 << (tpl_synth_size_offset);
     const int    mi_cols_sr            = ((pcs->enhanced_unscaled_pic->width + 15) / 16) << 2;
@@ -219,7 +219,9 @@ void generate_lambda_scaling_factor(PictureParentControlSet* pcs, int64_t mc_dep
             if (mc_dep_cost_base && (recrf_dist_sum > 0)) {
                 double rk = ((double)(recrf_dist_sum << (RDDIV_BITS))) /
                     ((recrf_dist_sum << RDDIV_BITS) + mc_dep_delta_sum);
-                scaling_factors += rk / pcs->r0;
+                // Apply reactiveness scale to amplify or dampen per-block adjustments
+                double rk_adjusted = (rk / pcs->r0) * pcs->tpl_ctrls.tpl_reactiveness_scale;
+                scaling_factors += rk_adjusted;
             }
             pcs->pa_me_data->tpl_rdmult_scaling_factors[index] = scaling_factors;
         }
@@ -420,8 +422,8 @@ static void tpl_subpel_search(SequenceControlSet* scs, PictureParentControlSet* 
                               const uint32_t mb_origin_y, const uint8_t bsize, Mv* best_mv) {
     const Av1Common* const cm         = pcs->av1_cm;
     const BlockSize        block_size = bsize == 8 ? BLOCK_8X8
-               : bsize == 16                       ? BLOCK_16X16
-               : bsize == 32                       ? BLOCK_32X32
+        : bsize == 16                              ? BLOCK_16X16
+        : bsize == 32                              ? BLOCK_32X32
                                                    : BLOCK_64X64;
 
     // ref_mv is used to calculate the cost of the motion vector
@@ -569,8 +571,8 @@ static void tpl_mc_flow_dispenser_sb_generic(EncodeContext* enc_ctx, SequenceCon
         const CodedBlockStats* blk_stats_ptr = svt_aom_get_coded_blk_stats(z_blk_index);
         const uint8_t          bsize         = blk_stats_ptr->size;
         const BlockSize        block_size    = bsize == 8 ? BLOCK_8X8
-                      : bsize == 16                       ? BLOCK_16X16
-                      : bsize == 32                       ? BLOCK_32X32
+            : bsize == 16                                 ? BLOCK_16X16
+            : bsize == 32                                 ? BLOCK_32X32
                                                           : BLOCK_64X64;
         const uint32_t         mb_origin_x   = b64_geom->org_x + blk_stats_ptr->org_x;
         const uint32_t         mb_origin_y   = b64_geom->org_y + blk_stats_ptr->org_y;
@@ -1098,8 +1100,8 @@ static void tpl_mc_flow_dispenser_sb_generic(EncodeContext* enc_ctx, SequenceCon
                                                                          input_pic->height);
                 uint8_t ois_intra_mode = best_intra_mode;
                 int32_t p_angle        = av1_is_directional_mode((PredictionMode)ois_intra_mode)
-                           ? mode_to_angle_map[(PredictionMode)ois_intra_mode]
-                           : 0;
+                    ? mode_to_angle_map[(PredictionMode)ois_intra_mode]
+                    : 0;
                 // Edge filter
                 if (av1_is_directional_mode((PredictionMode)ois_intra_mode)) {
                     svt_aom_filter_intra_edge(ois_intra_mode,
@@ -1979,8 +1981,8 @@ void* svt_aom_tpl_disp_kernel(void* input_ptr) {
         int32_t frame_idx           = in_results_ptr->frame_index;
         context_ptr->coded_sb_count = 0;
 
-        uint16_t tile_group_width_in_sb = pcs->tile_group_info[0 /*context_ptr->tile_group_index*/] //  1 tile
-                                              .tile_group_width_in_sb;
+        uint16_t        tile_group_width_in_sb = pcs->tile_group_info[0 /*context_ptr->tile_group_index*/] //  1 tile
+                                                     .tile_group_width_in_sb;
         EncDecSegments* segments_ptr;
 
         segments_ptr = pcs->tpl_disp_segment_ctrl[0 /*context_ptr->tile_group_index*/]; //  1 tile
@@ -2018,7 +2020,7 @@ void* svt_aom_tpl_disp_kernel(void* input_ptr) {
                 segment_row_index  = segment_index / segments_ptr->segment_band_count;
                 segment_band_index = segment_index - segment_row_index * segments_ptr->segment_band_count;
                 segment_band_size  = (segments_ptr->sb_band_count * (segment_band_index + 1) +
-                                     segments_ptr->segment_band_count - 1) /
+                                      segments_ptr->segment_band_count - 1) /
                     segments_ptr->segment_band_count;
 
                 for (y_sb_index = y_sb_start_index, sb_segment_index = sb_start_index;

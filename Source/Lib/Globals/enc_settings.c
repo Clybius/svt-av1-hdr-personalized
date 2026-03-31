@@ -926,6 +926,16 @@ EbErrorType svt_av1_verify_settings(SequenceControlSet* scs) {
         return_error = EB_ErrorBadParameter;
     }
 
+    if (config->tpl_reactiveness_scale < 0.0 || config->tpl_reactiveness_scale > 10.0) {
+        SVT_ERROR("TPL reactiveness scale must be between 0.0 and 10.0\n");
+        return_error = EB_ErrorBadParameter;
+    }
+
+    if (config->tpl_importance_scale < 0.0 || config->tpl_importance_scale > 10.0) {
+        SVT_ERROR("TPL importance scale must be between 0.0 and 10.0\n");
+        return_error = EB_ErrorBadParameter;
+    }
+
     return return_error;
 }
 
@@ -1013,7 +1023,7 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration* config_ptr) {
     config_ptr->film_grain_denoise_strength_pct = 100;
     config_ptr->noise_strength                  = 0;
     config_ptr->noise_strength_chroma           = -1;
-    config_ptr->noise_size                  = -1;
+    config_ptr->noise_size                      = -1;
 
     // CPU Flags
     config_ptr->use_cpu_flags = EB_CPU_FLAGS_ALL;
@@ -1103,6 +1113,8 @@ EbErrorType svt_av1_set_default_params(EbSvtAv1EncConfiguration* config_ptr) {
     config_ptr->noise_adaptive_filtering          = 2;
     config_ptr->cdef_scaling                      = 15;
     config_ptr->enable_daala                      = 0;
+    config_ptr->tpl_reactiveness_scale            = 1.0;
+    config_ptr->tpl_importance_scale              = 1.0;
     return return_error;
 }
 
@@ -2398,6 +2410,8 @@ EB_API EbErrorType svt_av1_enc_parse_parameter(EbSvtAv1EncConfiguration* config_
     } double_opts[] = {
         {"qp-scale-compress-strength", &config_struct->qp_scale_compress_strength},
         {"ac-bias", &config_struct->ac_bias},
+        {"tpl-reactiveness-scale", &config_struct->tpl_reactiveness_scale},
+        {"tpl-importance-scale", &config_struct->tpl_importance_scale},
     };
 
     const size_t double_opts_size = sizeof(double_opts) / sizeof(double_opts[0]);

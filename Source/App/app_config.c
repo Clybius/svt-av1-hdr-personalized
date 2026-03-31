@@ -227,6 +227,8 @@
 #define NOISE_ADAPTIVE_FILTERING_TOKEN "--noise-adaptive-filtering"
 #define CDEF_SCALING_TOKEN "--cdef-scaling"
 #define ENABLE_DAALA_TOKEN "--enable-daala"
+#define TPL_REACTIVENESS_SCALE_TOKEN "--tpl-reactiveness-scale"
+#define TPL_IMPORTANCE_SCALE_TOKEN "--tpl-importance-scale"
 
 static EbErrorType validate_error(EbErrorType err, const char* token, const char* value) {
     switch (err) {
@@ -1117,6 +1119,9 @@ ConfigDescription config_entry_psychovisual[] = {
     {CDEF_SCALING_TOKEN,
      "Controls scaling of the CDEF strength computation, default is 15 (1x scaling) [1: minimum, 8: ~0.5x, 30: 2x]"},
     {ENABLE_DAALA_TOKEN, "Enable Daala distortion metric, default is 0 [0-4]"},
+    // TPL tuning parameters
+    {TPL_REACTIVENESS_SCALE_TOKEN, "TPL reactiveness scale for short-lasting content, default is 1.0 [0.0-10.0]"},
+    {TPL_IMPORTANCE_SCALE_TOKEN, "TPL importance scale for long-lasting content, default is 1.0 [0.0-10.0]"},
     // Termination
     {NULL, NULL}};
 
@@ -1368,6 +1373,10 @@ ConfigEntry config_entry[] = {
 
     // CDEF scaling
     {CDEF_SCALING_TOKEN, "CDEFScaling", set_cfg_generic_token},
+
+    // TPL tuning parameters
+    {TPL_REACTIVENESS_SCALE_TOKEN, "TplReactivenessScale", set_cfg_generic_token},
+    {TPL_IMPORTANCE_SCALE_TOKEN, "TplImportanceScale", set_cfg_generic_token},
 
     // Termination
     {NULL, NULL, NULL}};

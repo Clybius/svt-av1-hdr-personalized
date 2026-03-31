@@ -1114,6 +1114,26 @@ typedef struct EbSvtAv1EncConfiguration {
     int8_t noise_size;
 
     /**
+     * @brief TPL reactiveness scale - controls quality allocation to short-lasting new parts of the scene
+     *
+     * 0.0: disable TPL reactiveness adjustments
+     * 1.0: default TPL reactiveness
+     * Higher values increase quality given to new/transient scene content
+     * Default is 1.0, range is [0.0-10.0]
+     */
+    double tpl_reactiveness_scale;
+
+    /**
+     * @brief TPL importance scale - controls quality allocation to long-lasting/unchanging parts of the scene
+     *
+     * 0.0: disable TPL importance adjustments
+     * 1.0: default TPL importance
+     * Higher values increase quality given to persistent/static scene content
+     * Default is 1.0, range is [0.0-10.0]
+     */
+    double tpl_importance_scale;
+
+    /**
      * @brief Check if color range is provided by the user
      */
     bool color_range_provided;
@@ -1123,7 +1143,7 @@ typedef struct EbSvtAv1EncConfiguration {
                     sizeof(uint8_t) // pred_strucutre type was changed from uint8_t to PredStructure
                     /* SVT-AV1-HDR additions */
                     - (sizeof(uint8_t) * 10) - (sizeof(int8_t) * 1) - (sizeof(int32_t) * 1) - (sizeof(bool) * 3) -
-                    (sizeof(double))];
+                    (sizeof(double) * 3)];
     // clang-format on
 } EbSvtAv1EncConfiguration;
 

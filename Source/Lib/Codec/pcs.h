@@ -424,12 +424,12 @@ typedef struct MotionEstimationData {
 } MotionEstimationData;
 
 typedef struct TplControls {
-    uint8_t              enable; // 0: TPL OFF; 1: TPL ON
-    uint8_t              compute_rate; // 1: use rate 1: no rate
-    uint8_t              enable_tpl_qps; // 0:OFF 1:ON - QPS in TPL
-    uint8_t              disable_intra_pred_nref; // 0:OFF 1:ON - Disable intra prediction in NREF
-    PredictionMode       intra_mode_end; // The MAX intra mode to be tested in TPL
-    TxCoeffShape         pf_shape;
+    uint8_t        enable; // 0: TPL OFF; 1: TPL ON
+    uint8_t        compute_rate; // 1: use rate 1: no rate
+    uint8_t        enable_tpl_qps; // 0:OFF 1:ON - QPS in TPL
+    uint8_t        disable_intra_pred_nref; // 0:OFF 1:ON - Disable intra prediction in NREF
+    PredictionMode intra_mode_end; // The MAX intra mode to be tested in TPL
+    TxCoeffShape   pf_shape;
     // Use SAD as a distortion metric when searching the best mode (based on src pic). If false, will use SATD
     uint8_t use_sad_in_src_search;
     int8_t  reduced_tpl_group;
@@ -450,6 +450,9 @@ typedef struct TplControls {
     subpel_depth;
     // Specifies the subpel accuracy for diagonal position(s)
     uint8_t subpel_diag_refinement;
+    // TPL tuning parameters
+    double tpl_reactiveness_scale;
+    double tpl_importance_scale;
 } TplControls;
 
 typedef struct {
@@ -1171,6 +1174,8 @@ typedef struct PictureControlSetInitData {
     uint8_t hbd_mds;
     uint8_t tx_bias;
     uint8_t complex_hvs;
+    double  tpl_reactiveness_scale;
+    double  tpl_importance_scale;
 } PictureControlSetInitData;
 
 /**************************************

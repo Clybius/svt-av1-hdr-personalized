@@ -1066,7 +1066,7 @@ static int get_active_best_quality(PictureControlSet* pcs, int active_worst_qual
     ASSIGN_MINQ_TABLE(bit_depth, inter_minq);
     int active_best_quality = 0;
     int is_leaf_frame       = !(ppcs->update_type == SVT_AV1_GF_UPDATE || ppcs->update_type == SVT_AV1_ARF_UPDATE ||
-                          is_intrl_arf_boost);
+                                is_intrl_arf_boost);
     int is_overlay_frame    = ppcs->is_overlay;
 
     if (is_leaf_frame || is_overlay_frame) {
@@ -1180,6 +1180,16 @@ static int rc_pick_q_and_bounds(PictureControlSet* pcs) {
         assert(r0_weight_idx <= 2);
         double weight      = svt_av1_r0_weight[r0_weight_idx];
         double qstep_ratio = sqrt(ppcs->r0) * weight * (1.000 + scs->static_config.qp_scale_compress_strength * 0.125);
+        // Apply TPL importance scale for long-lasting content
+        // Compute deviation from neutral (1.0)
+        double deviation = qstep_ratio - 1.0;
+        // Apply importance scale to amplify/compress the deviation
+        double scaled_deviation = deviation * ppcs->tpl_ctrls.tpl_importance_scale;
+        // Sigmoid soft-clip: rational sigmoid with k=0.5
+        const double k              = 0.5;
+        double       soft_deviation = scaled_deviation / (1.0 + k * fabs(scaled_deviation));
+        // Reconstruct final qstep ratio around neutral 1.0
+        qstep_ratio = 1.0 + soft_deviation;
         if (scs->static_config.qp_scale_compress_strength > 0.0) {
             // clamp qstep_ratio so it doesn't get past the weight value
             qstep_ratio = MIN(weight, qstep_ratio);
@@ -1762,7 +1772,7 @@ void recode_loop_update_q(PictureParentControlSet* ppcs, bool* const loop, int* 
     RATE_CONTROL*       rc            = &enc_ctx->rc;
     RateControlCfg*     rc_cfg        = &enc_ctx->rc_cfg;
     int                 do_dummy_pack = (scs->enc_ctx->recode_loop >= ALLOW_RECODE_KFMAXBW &&
-                         !(rc_cfg->mode == AOM_Q && scs->static_config.max_bit_rate == 0)) ||
+                                         !(rc_cfg->mode == AOM_Q && scs->static_config.max_bit_rate == 0)) ||
         rc_cfg->min_cr > 0;
     if (do_dummy_pack) {
         svt_block_on_mutex(ppcs->pcs_total_rate_mutex);

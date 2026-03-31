@@ -300,6 +300,9 @@ uint8_t svt_aom_set_tpl_group(PictureParentControlSet* pcs, uint8_t tpl_group_le
         tpl_ctrls->r0_adjust_factor *= 1.25;
         tpl_ctrls->r0_adjust_factor = MIN(3, tpl_ctrls->r0_adjust_factor);
     }
+    // Copy TPL tuning parameters from static config
+    tpl_ctrls->tpl_reactiveness_scale = pcs->scs->static_config.tpl_reactiveness_scale;
+    tpl_ctrls->tpl_importance_scale   = pcs->scs->static_config.tpl_importance_scale;
     memcpy(&pcs->tpl_ctrls, tpl_ctrls, sizeof(TplControls));
     return tpl_ctrls->synth_blk_size;
 }

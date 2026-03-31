@@ -260,10 +260,10 @@ void set_segments_numbers(SequenceControlSet* scs) {
 
     scs->tpl_segment_col_count_array = (lp == PARALLEL_LEVEL_1) ? 1 : ((scs->max_input_luma_width + 32) / 64);
 
-    scs->cdef_segment_row_count    = (lp == PARALLEL_LEVEL_1)          ? 1
-           : (((scs->max_input_luma_height + 32) / BLOCK_SIZE_64) < 6) ? 1
-           : (scs->input_resolution <= INPUT_SIZE_1080p_RANGE)         ? 2
-                                                                       : 4;
+    scs->cdef_segment_row_count    = (lp == PARALLEL_LEVEL_1)       ? 1
+        : (((scs->max_input_luma_height + 32) / BLOCK_SIZE_64) < 6) ? 1
+        : (scs->input_resolution <= INPUT_SIZE_1080p_RANGE)         ? 2
+                                                                    : 4;
     scs->cdef_segment_column_count = (lp == PARALLEL_LEVEL_1)       ? 1
         : (((scs->max_input_luma_width + 32) / BLOCK_SIZE_64) < 10) ? 1
         : (scs->input_resolution <= INPUT_SIZE_1080p_RANGE)         ? 3
@@ -278,7 +278,7 @@ void set_segments_numbers(SequenceControlSet* scs) {
         : scs->input_resolution <= INPUT_SIZE_1080p_RANGE     ? MIN(rest_seg_w, 6)
                                                               : MIN(rest_seg_w, 9);
     scs->rest_segment_row_count    = (lp == PARALLEL_LEVEL_1) ? 1
-           : scs->input_resolution <= INPUT_SIZE_1080p_RANGE  ? MIN(rest_seg_h, 4)
+        : scs->input_resolution <= INPUT_SIZE_1080p_RANGE     ? MIN(rest_seg_h, 4)
                                                               : MIN(rest_seg_h, 6);
 }
 
@@ -476,8 +476,8 @@ static EbErrorType load_default_buffer_configuration_settings(SequenceControlSet
     } else {
         const uint8_t pcs_processes                    = scs->static_config.rate_control_mode == SVT_AV1_RC_MODE_VBR &&
                 scs->static_config.pass == ENC_SECOND_PASS
-                               ? 24
-                               : 20;
+            ? 24
+            : 20;
         scs->picture_control_set_pool_init_count_child = scs->enc_dec_pool_init_count =
             clamp(pcs_processes, min_child, max_child) + superres_count;
     }
@@ -508,10 +508,10 @@ static EbErrorType load_default_buffer_configuration_settings(SequenceControlSet
     const uint32_t tot_enc_dec_segs = scs->enc_dec_segment_col_count_array * scs->enc_dec_segment_row_count_array;
     const uint32_t tot_cdef_segs    = scs->cdef_segment_column_count * scs->cdef_segment_row_count;
     const uint32_t tot_rest_segs    = scs->rest_segment_column_count * scs->rest_segment_row_count;
-    const uint32_t tot_tiles        = MIN(9,
+    const uint32_t tot_tiles = MIN(9,
                                    (1 << scs->static_config.tile_columns) *
                                        (1 << scs->static_config.tile_rows)); //Jing: Too many tiles may drain the fifo
-    const uint32_t max_fifo         = 300;
+    const uint32_t max_fifo  = 300;
 
     // Open loop
     scs->resource_coordination_fifo_init_count = MIN(
@@ -539,7 +539,7 @@ static EbErrorType load_default_buffer_configuration_settings(SequenceControlSet
     scs->rate_control_tasks_fifo_init_count = MIN(
         max_fifo,
         2 * scs->picture_control_set_pool_init_count_child); // inputs to rc form pic manager and EC/packetization
-    scs->rate_control_fifo_init_count                = MIN(max_fifo,
+    scs->rate_control_fifo_init_count = MIN(max_fifo,
                                             scs->picture_control_set_pool_init_count_child); // inputs to MDC from rc
     scs->mode_decision_configuration_fifo_init_count = MIN(
         max_fifo,
@@ -1331,20 +1331,22 @@ EB_API EbErrorType svt_av1_enc_init(EbComponentType* svt_enc_component) {
         input_data.input_resolution = scs->input_resolution;
         input_data.is_scale         = scs->static_config.superres_mode > SUPERRES_NONE ||
             scs->static_config.resize_mode > RESIZE_NONE;
-        input_data.rtc_tune            = scs->static_config.rtc;
-        input_data.variance_octile     = scs->static_config.variance_octile;
-        input_data.adaptive_film_grain = scs->static_config.adaptive_film_grain;
-        input_data.noise_norm_strength = scs->static_config.noise_norm_strength;
-        input_data.kf_tf_strength      = scs->static_config.kf_tf_strength;
-        input_data.alt_lambda_factors  = scs->static_config.alt_lambda_factors;
-        input_data.sharp_tx            = scs->static_config.sharp_tx;
-        input_data.alt_ssim_tuning     = scs->static_config.alt_ssim_tuning;
-        input_data.hbd_mds             = scs->static_config.hbd_mds;
-        input_data.tx_bias             = scs->static_config.tx_bias;
-        input_data.complex_hvs         = scs->static_config.complex_hvs;
-        input_data.static_config       = scs->static_config;
-        input_data.allintra            = scs->allintra;
-        input_data.use_flat_ipp        = scs->use_flat_ipp;
+        input_data.rtc_tune               = scs->static_config.rtc;
+        input_data.variance_octile        = scs->static_config.variance_octile;
+        input_data.adaptive_film_grain    = scs->static_config.adaptive_film_grain;
+        input_data.noise_norm_strength    = scs->static_config.noise_norm_strength;
+        input_data.kf_tf_strength         = scs->static_config.kf_tf_strength;
+        input_data.alt_lambda_factors     = scs->static_config.alt_lambda_factors;
+        input_data.sharp_tx               = scs->static_config.sharp_tx;
+        input_data.alt_ssim_tuning        = scs->static_config.alt_ssim_tuning;
+        input_data.hbd_mds                = scs->static_config.hbd_mds;
+        input_data.tx_bias                = scs->static_config.tx_bias;
+        input_data.complex_hvs            = scs->static_config.complex_hvs;
+        input_data.tpl_reactiveness_scale = scs->static_config.tpl_reactiveness_scale;
+        input_data.tpl_importance_scale   = scs->static_config.tpl_importance_scale;
+        input_data.static_config          = scs->static_config;
+        input_data.allintra               = scs->allintra;
+        input_data.use_flat_ipp           = scs->use_flat_ipp;
         EB_NEW(enc_handle_ptr->picture_parent_control_set_pool_ptr,
                svt_system_resource_ctor,
                scs->picture_control_set_pool_init_count, //enc_handle_ptr->pcs_pool_total_count,
@@ -3682,10 +3684,10 @@ static void set_param_based_on_input(SequenceControlSet* scs) {
     // so should call get_tpl_level() after validate_scaling_params()
     validate_scaling_params(scs);
     scs->tpl               = get_tpl(scs->static_config.pred_structure,
-                       scs->static_config.superres_mode,
-                       scs->static_config.resize_mode,
-                       scs->static_config.aq_mode,
-                       allintra);
+                                     scs->static_config.superres_mode,
+                                     scs->static_config.resize_mode,
+                                     scs->static_config.aq_mode,
+                                     allintra);
     uint16_t subsampling_x = scs->subsampling_x;
     uint16_t subsampling_y = scs->subsampling_y;
     // Update picture width, and picture height
@@ -4143,8 +4145,8 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->enable_qp_scaling_flag = scs->allintra ? 0 : 1;
     // Set Picture Parameters for statistics gathering
     scs->picture_analysis_number_of_regions_per_width  = scs->max_input_luma_width >= 64
-         ? HIGHER_THAN_CLASS_1_REGION_SPLIT_PER_WIDTH
-         : 1;
+        ? HIGHER_THAN_CLASS_1_REGION_SPLIT_PER_WIDTH
+        : 1;
     scs->picture_analysis_number_of_regions_per_height = scs->max_input_luma_height >= 64
         ? HIGHER_THAN_CLASS_1_REGION_SPLIT_PER_HEIGHT
         : 1;
@@ -4157,7 +4159,7 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->static_config.intra_period_length = config_struct->intra_period_length;
     scs->static_config.avif                = config_struct->avif;
     scs->allintra                          = (scs->static_config.intra_period_length == 0 || scs->static_config.avif ||
-                     scs->static_config.pred_structure == ALL_INTRA);
+                                              scs->static_config.pred_structure == ALL_INTRA);
     if (scs->allintra) {
         scs->static_config.pred_structure      = ALL_INTRA;
         scs->static_config.intra_period_length = 0;
@@ -4201,8 +4203,8 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->static_config.key_frame_qindex_offset        = config_struct->key_frame_qindex_offset;
     if (scs->static_config.use_fixed_qindex_offsets) {
         scs->enable_qp_scaling_flag    = scs->static_config.use_fixed_qindex_offsets == 1
-               ? 0
-               : 1; // do not shut the auto QPS if use_fixed_qindex_offsets 2
+            ? 0
+            : 1; // do not shut the auto QPS if use_fixed_qindex_offsets 2
         scs->static_config.use_qp_file = 0;
         memcpy(scs->static_config.qindex_offsets, config_struct->qindex_offsets, MAX_TEMPORAL_LAYERS * sizeof(int32_t));
     }
@@ -4249,8 +4251,8 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->static_config.fast_decode = config_struct->fast_decode;
 
     //Film Grain
-    scs->static_config.film_grain_denoise_strength = config_struct->film_grain_denoise_strength;
-    scs->static_config.film_grain_denoise_apply    = config_struct->film_grain_denoise_apply;
+    scs->static_config.film_grain_denoise_strength     = config_struct->film_grain_denoise_strength;
+    scs->static_config.film_grain_denoise_apply        = config_struct->film_grain_denoise_apply;
     scs->static_config.film_grain_denoise_strength_pct = config_struct->film_grain_denoise_strength_pct;
     if (scs->static_config.film_grain_denoise_strength == 0 && scs->static_config.film_grain_denoise_apply == 1) {
         SVT_WARN("Film grain denoise apply signal is going to be ignored when film grain is off.\n");
@@ -4350,8 +4352,8 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->static_config.max_qp_allowed = scs->static_config.lossless ? MIN_QP_VALUE : config_struct->max_qp_allowed;
 
     scs->static_config.min_qp_allowed      = scs->static_config.lossless ? MIN_QP_VALUE
-             : config_struct->min_qp_allowed == MIN_QP_AUTO ? scs->static_config.rate_control_mode ? 4 : MIN_QP_VALUE
-                                                            : config_struct->min_qp_allowed;
+        : config_struct->min_qp_allowed == MIN_QP_AUTO ? scs->static_config.rate_control_mode ? 4 : MIN_QP_VALUE
+                                                       : config_struct->min_qp_allowed;
     scs->static_config.vbr_min_section_pct = config_struct->vbr_min_section_pct;
     scs->static_config.vbr_max_section_pct = config_struct->vbr_max_section_pct;
     scs->static_config.under_shoot_pct     = config_struct->under_shoot_pct;
@@ -4516,8 +4518,8 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
     scs->static_config.sframe_qp        = config_struct->sframe_qp;
     scs->static_config.sframe_qp_offset = config_struct->sframe_qp_offset;
     scs->seq_header.max_frame_width  = config_struct->forced_max_frame_width > 0 ? config_struct->forced_max_frame_width
-         : scs->static_config.sframe_dist > 0 || scs->static_config.sframe_posi.sframe_posis ? 16384
-                                                                                             : scs->max_input_luma_width;
+        : scs->static_config.sframe_dist > 0 || scs->static_config.sframe_posi.sframe_posis ? 16384
+                                                                                            : scs->max_input_luma_width;
     scs->seq_header.max_frame_height = config_struct->forced_max_frame_height > 0
         ? config_struct->forced_max_frame_height
         : scs->static_config.sframe_dist > 0 || scs->static_config.sframe_posi.sframe_posis
@@ -4610,6 +4612,10 @@ static void copy_api_from_app(SequenceControlSet* scs, EbSvtAv1EncConfiguration*
 
     // Daala
     scs->static_config.enable_daala = config_struct->enable_daala;
+
+    // TPL tuning parameters
+    scs->static_config.tpl_reactiveness_scale = config_struct->tpl_reactiveness_scale;
+    scs->static_config.tpl_importance_scale   = config_struct->tpl_importance_scale;
 
     // Override settings for Still IQ tune
     if (scs->static_config.tune == TUNE_IQ) {
@@ -5106,8 +5112,8 @@ EbErrorType svt_input_y8b_update(EbBufferHeaderType* input_buffer, SequenceContr
         : scs->max_input_luma_width + (scs->max_input_luma_width % 8);
 
     input_pic_buf_desc_init_data.max_height   = !(scs->max_input_luma_height % 8)
-          ? scs->max_input_luma_height
-          : scs->max_input_luma_height + (scs->max_input_luma_height % 8);
+        ? scs->max_input_luma_height
+        : scs->max_input_luma_height + (scs->max_input_luma_height % 8);
     input_pic_buf_desc_init_data.bit_depth    = EB_EIGHT_BIT;
     input_pic_buf_desc_init_data.color_format = (EbColorFormat)config->encoder_color_format;
 
@@ -5676,8 +5682,8 @@ static EbErrorType allocate_y8b_frame_buffer(SequenceControlSet* scs, EbBufferHe
         : scs->max_input_luma_width + (scs->max_input_luma_width % 8);
 
     input_pic_buf_desc_init_data.max_height   = !(scs->max_input_luma_height % 8)
-          ? scs->max_input_luma_height
-          : scs->max_input_luma_height + (scs->max_input_luma_height % 8);
+        ? scs->max_input_luma_height
+        : scs->max_input_luma_height + (scs->max_input_luma_height % 8);
     input_pic_buf_desc_init_data.bit_depth    = EB_EIGHT_BIT;
     input_pic_buf_desc_init_data.color_format = (EbColorFormat)config->encoder_color_format;
 
