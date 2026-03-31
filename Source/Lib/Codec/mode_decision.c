@@ -638,7 +638,7 @@ static void mode_decision_scratch_cand_bf_dctor(EbPtr p) {
 EbErrorType svt_aom_mode_decision_cand_bf_ctor(ModeDecisionCandidateBuffer* buffer_ptr, EbBitDepth max_bitdepth,
                                                uint8_t sb_size, uint32_t buffer_desc_mask,
                                                EbPictureBufferDesc* temp_residual, EbPictureBufferDesc* temp_recon_ptr,
-                                               uint64_t* fast_cost, uint64_t* full_cost, uint64_t* full_cost_ssim) {
+                                               uint64_t* fast_cost, uint64_t* full_cost, uint64_t* full_cost_ssim, uint64_t* full_cost_daala) {
     EbPictureBufferDescInitData picture_buffer_desc_init_data;
 
     EbPictureBufferDescInitData thirty_two_width_picture_buffer_desc_init_data;

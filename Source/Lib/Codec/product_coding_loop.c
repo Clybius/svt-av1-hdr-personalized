@@ -1022,12 +1022,12 @@ static void fast_loop_core_light_pd0(ModeDecisionCandidateBuffer* cand_bf, Pictu
             if (ctx->tune_daala_level >= 4) {
                 const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
                 *(cand_bf->fast_cost) += svt_spatial_full_distortion_daala_kernel(
-                                                               input_pic->buffer_y,
+                                                               input_pic->y_buffer,
                                                                input_origin_index,
-                                                               input_pic->stride_y << 1,
-                                                               ref_pic->buffer_y,
+                                                               input_pic->y_stride << 1,
+                                                               ref_pic->y_buffer,
                                                                ref_origin_index,
-                                                               ref_pic->stride_y << 1,
+                                                               ref_pic->y_stride << 1,
                                                                ctx->blk_geom->bwidth,
                                                                ctx->blk_geom->bheight >> 1,
                                                                pcs->scs->static_config.encoder_bit_depth,
@@ -4861,12 +4861,12 @@ static void tx_type_search(PictureControlSet* pcs, ModeDecisionContext* ctx, Mod
             const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
 
             txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_PREDICTION] = svt_spatial_full_distortion_daala_kernel(
-                input_pic->buffer_y,
+                input_pic->y_buffer,
                 input_txb_origin_index,
-                input_pic->stride_y,
-                cand_bf->pred->buffer_y,
+                input_pic->y_stride,
+                cand_bf->pred->y_buffer,
                 (int32_t)txb_origin_index,
-                cand_bf->pred->stride_y,
+                cand_bf->pred->y_stride,
                 cropped_tx_width,
                 cropped_tx_height,
                 pcs->scs->static_config.encoder_bit_depth,
@@ -4874,12 +4874,12 @@ static void tx_type_search(PictureControlSet* pcs, ModeDecisionContext* ctx, Mod
                 1);
 
             txb_full_distortion_txt[DIST_DAALA][tx_type][DIST_CALC_RESIDUAL] = svt_spatial_full_distortion_daala_kernel(
-                input_pic->buffer_y,
+                input_pic->y_buffer,
                 input_txb_origin_index,
-                input_pic->stride_y,
-                recon_ptr->buffer_y,
+                input_pic->y_stride,
+                recon_ptr->y_buffer,
                 (int32_t)txb_origin_index,
-                cand_bf->recon->stride_y,
+                cand_bf->recon->y_stride,
                 cropped_tx_width,
                 cropped_tx_height,
                 pcs->scs->static_config.encoder_bit_depth,
@@ -5772,12 +5772,12 @@ static void perform_dct_dct_tx(PictureControlSet* pcs, ModeDecisionContext* ctx,
         if (ctx->tune_daala_level >= 3) {
             const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
             y_full_distortion[DIST_DAALA][DIST_CALC_PREDICTION] = svt_spatial_full_distortion_daala_kernel(
-                input_pic->buffer_y,
+                input_pic->y_buffer,
                 input_txb_origin_index,
-                input_pic->stride_y,
-                cand_bf->pred->buffer_y,
+                input_pic->y_stride,
+                cand_bf->pred->y_buffer,
                 (int32_t)txb_origin_index,
-                cand_bf->pred->stride_y,
+                cand_bf->pred->y_stride,
                 cropped_tx_width,
                 cropped_tx_height,
                 pcs->scs->static_config.encoder_bit_depth,
@@ -5815,12 +5815,12 @@ static void perform_dct_dct_tx(PictureControlSet* pcs, ModeDecisionContext* ctx,
         if (ctx->tune_daala_level >= 3) {
             const uint32_t qindex = pcs->ppcs->frm_hdr.quantization_params.base_q_idx;
             y_full_distortion[DIST_DAALA][DIST_CALC_RESIDUAL] = svt_spatial_full_distortion_daala_kernel(
-                input_pic->buffer_y,
+                input_pic->y_buffer,
                 input_txb_origin_index,
-                input_pic->stride_y,
-                recon_ptr->buffer_y,
+                input_pic->y_stride,
+                recon_ptr->y_buffer,
                 (int32_t)txb_origin_index,
-                cand_bf->recon->stride_y,
+                cand_bf->recon->y_stride,
                 cropped_tx_width,
                 cropped_tx_height,
                 pcs->scs->static_config.encoder_bit_depth,
