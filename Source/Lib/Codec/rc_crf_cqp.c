@@ -595,6 +595,9 @@ void svt_av1_rc_calc_qindex_crf_cqp(PictureControlSet* pcs, SequenceControlSet* 
 
     // Calculate chroma delta q for Cb and Cr
     q_params->delta_q_dc[1] = new_qindex > 0 ? CLIP3(-64, 63, u_dc_qindex) : 0;
+    q_params->delta_q_ac[1] = new_qindex > 0 ? CLIP3(-64, 63, u_ac_qindex) : 0;
+    q_params->delta_q_dc[2] = new_qindex > 0 ? CLIP3(-64, 63, v_dc_qindex) : 0;
+    q_params->delta_q_ac[2] = new_qindex > 0 ? CLIP3(-64, 63, v_ac_qindex) : 0;
 
     if (scs->static_config.tune == TUNE_VMAF && new_qindex > 0) {
         const int   cfg_offset         = frame_is_intra_only(ppcs)
